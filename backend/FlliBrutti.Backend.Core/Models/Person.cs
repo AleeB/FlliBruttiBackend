@@ -15,5 +15,5 @@ public partial class Person
 
     public virtual User? User { get; set; }
 
-    public virtual UsersNotAuthenticated? UsersNotAuthenticated { get; set; }
+    public virtual UserNotAuthenticated? UserNotAuthenticated { get; set; }
 }

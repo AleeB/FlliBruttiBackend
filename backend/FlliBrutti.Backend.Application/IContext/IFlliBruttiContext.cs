@@ -7,7 +7,7 @@ namespace FlliBrutti.Backend.Application.IContext;
 public interface IFlliBruttiContext
 {
     public DbSet<User> Users { get; set; }
-    public DbSet<UsersNotAuthenticated> UsersNotAuthenticated { get; set; }
+    public DbSet<UserNotAuthenticated> UsersNotAuthenticated { get; set; }
     public DbSet<Firma> Firme { get; set; }
     public DbSet<FormulaPreventivo> FormulaPreventivo { get; set; }
     public DbSet<Preventivo> Preventivi { get; set; }

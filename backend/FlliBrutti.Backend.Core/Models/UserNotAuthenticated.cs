@@ -3,7 +3,7 @@ using System.Collections.Generic;
 
 namespace FlliBrutti.Backend.Core.Models;
 
-public partial class UsersNotAuthenticated
+public partial class UserNotAuthenticated
 {
     public long IdPerson { get; set; }
 

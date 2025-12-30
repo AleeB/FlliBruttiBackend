@@ -14,7 +14,7 @@ public class FlliBruttiContext : DbContext, IFlliBruttiContext
     }
 
     public DbSet<User> Users { get; set; }
-    public DbSet<UsersNotAuthenticated> UsersNotAuthenticated { get; set; }
+    public DbSet<UserNotAuthenticated> UsersNotAuthenticated { get; set; }
     public DbSet<Firma> Firme { get; set; }
     public DbSet<FormulaPreventivo> FormulaPreventivo { get; set; }
     public DbSet<Preventivo> Preventivi { get; set; }
@@ -134,7 +134,7 @@ public class FlliBruttiContext : DbContext, IFlliBruttiContext
                 .HasConstraintName("idPersonRef");
         });
 
-        modelBuilder.Entity<UsersNotAuthenticated>(entity =>
+        modelBuilder.Entity<UserNotAuthenticated>(entity =>
         {
             entity.HasKey(e => e.IdPerson).HasName("PRIMARY");
 
@@ -149,8 +149,8 @@ public class FlliBruttiContext : DbContext, IFlliBruttiContext
                 .HasMaxLength(20)
                 .HasColumnName("ip");
 
-            entity.HasOne(d => d.IdPersonNavigation).WithOne(p => p.UsersNotAuthenticated)
-                .HasForeignKey<UsersNotAuthenticated>(d => d.IdPerson)
+            entity.HasOne(d => d.IdPersonNavigation).WithOne(p => p.UserNotAuthenticated)
+                .HasForeignKey<UserNotAuthenticated>(d => d.IdPerson)
                 .OnDelete(DeleteBehavior.ClientSetNull)
                 .HasConstraintName("idPersonNotAuthenticatedRef");
         });

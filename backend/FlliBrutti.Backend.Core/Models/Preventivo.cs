@@ -19,5 +19,5 @@ public partial class Preventivo
 
     public virtual User? IdUserNavigation { get; set; }
 
-    public virtual UsersNotAuthenticated? IdUserNonAutenticatoNavigation { get; set; }
+    public virtual UserNotAuthenticated? IdUserNonAutenticatoNavigation { get; set; }
 }

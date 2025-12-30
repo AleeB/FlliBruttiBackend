@@ -1,13 +1,13 @@
--- MySQL dump 10.13  Distrib 8.4.7, for macos15 (arm64)
+-- MySQL dump 10.13  Distrib 8.0.44, for Win64 (x86_64)
 --
--- Host: localhost    Database: flliBrutti
+-- Host: localhost    Database: fllibrutti
 -- ------------------------------------------------------
 -- Server version	8.4.7
 
 /*!40101 SET @OLD_CHARACTER_SET_CLIENT=@@CHARACTER_SET_CLIENT */;
 /*!40101 SET @OLD_CHARACTER_SET_RESULTS=@@CHARACTER_SET_RESULTS */;
 /*!40101 SET @OLD_COLLATION_CONNECTION=@@COLLATION_CONNECTION */;
-/*!50503 SET NAMES utf8mb4 */;
+/*!50503 SET NAMES utf8 */;
 /*!40103 SET @OLD_TIME_ZONE=@@TIME_ZONE */;
 /*!40103 SET TIME_ZONE='+00:00' */;
 /*!40014 SET @OLD_UNIQUE_CHECKS=@@UNIQUE_CHECKS, UNIQUE_CHECKS=0 */;
@@ -43,13 +43,13 @@ LOCK TABLES `firme` WRITE;
 UNLOCK TABLES;
 
 --
--- Table structure for table `formulaPreventivo`
+-- Table structure for table `formulapreventivo`
 --
 
-DROP TABLE IF EXISTS `formulaPreventivo`;
+DROP TABLE IF EXISTS `formulapreventivo`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
 /*!50503 SET character_set_client = utf8mb4 */;
-CREATE TABLE `formulaPreventivo` (
+CREATE TABLE `formulapreventivo` (
   `costo_km` float NOT NULL,
   `primo_autista` float NOT NULL,
   `seconto_autista` float NOT NULL
@@ -57,22 +57,22 @@ CREATE TABLE `formulaPreventivo` (
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
--- Dumping data for table `formulaPreventivo`
+-- Dumping data for table `formulapreventivo`
 --
 
-LOCK TABLES `formulaPreventivo` WRITE;
-/*!40000 ALTER TABLE `formulaPreventivo` DISABLE KEYS */;
-/*!40000 ALTER TABLE `formulaPreventivo` ENABLE KEYS */;
+LOCK TABLES `formulapreventivo` WRITE;
+/*!40000 ALTER TABLE `formulapreventivo` DISABLE KEYS */;
+/*!40000 ALTER TABLE `formulapreventivo` ENABLE KEYS */;
 UNLOCK TABLES;
 
 --
--- Table structure for table `persons`
+-- Table structure for table `people`
 --
 
-DROP TABLE IF EXISTS `persons`;
+DROP TABLE IF EXISTS `people`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
 /*!50503 SET character_set_client = utf8mb4 */;
-CREATE TABLE `persons` (
+CREATE TABLE `people` (
   `idPerson` bigint NOT NULL AUTO_INCREMENT,
   `name` varchar(50) DEFAULT NULL,
   `surname` varchar(50) DEFAULT NULL,
@@ -82,12 +82,12 @@ CREATE TABLE `persons` (
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
--- Dumping data for table `persons`
+-- Dumping data for table `people`
 --
 
-LOCK TABLES `persons` WRITE;
-/*!40000 ALTER TABLE `persons` DISABLE KEYS */;
-/*!40000 ALTER TABLE `persons` ENABLE KEYS */;
+LOCK TABLES `people` WRITE;
+/*!40000 ALTER TABLE `people` DISABLE KEYS */;
+/*!40000 ALTER TABLE `people` ENABLE KEYS */;
 UNLOCK TABLES;
 
 --
@@ -107,7 +107,7 @@ CREATE TABLE `preventivi` (
   PRIMARY KEY (`idPreventivi`),
   KEY `idUser_idx` (`idUser`),
   KEY `idUserNonAutenticato_idx` (`idUserNonAutenticato`),
-  CONSTRAINT `idUserNonAutenticatoRef` FOREIGN KEY (`idUserNonAutenticato`) REFERENCES `usersNotAuthenticated` (`idPerson`) ON DELETE CASCADE ON UPDATE CASCADE,
+  CONSTRAINT `idUserNonAutenticatoRef` FOREIGN KEY (`idUserNonAutenticato`) REFERENCES `usersnotauthenticated` (`idPerson`) ON DELETE CASCADE ON UPDATE CASCADE,
   CONSTRAINT `idUserRef` FOREIGN KEY (`idUser`) REFERENCES `users` (`idPerson`) ON DELETE CASCADE ON UPDATE CASCADE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
@@ -135,7 +135,7 @@ CREATE TABLE `users` (
   `password` varchar(100) NOT NULL,
   PRIMARY KEY (`idPerson`),
   UNIQUE KEY `idPerson_UNIQUE` (`idPerson`),
-  CONSTRAINT `idPersonRef` FOREIGN KEY (`idPerson`) REFERENCES `persons` (`idPerson`) ON DELETE CASCADE ON UPDATE CASCADE
+  CONSTRAINT `idPersonRef` FOREIGN KEY (`idPerson`) REFERENCES `people` (`idPerson`) ON DELETE CASCADE ON UPDATE CASCADE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
@@ -149,29 +149,33 @@ LOCK TABLES `users` WRITE;
 UNLOCK TABLES;
 
 --
--- Table structure for table `usersNotAuthenticated`
+-- Table structure for table `usersnotauthenticated`
 --
 
-DROP TABLE IF EXISTS `usersNotAuthenticated`;
+DROP TABLE IF EXISTS `usersnotauthenticated`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
 /*!50503 SET character_set_client = utf8mb4 */;
-CREATE TABLE `usersNotAuthenticated` (
+CREATE TABLE `usersnotauthenticated` (
   `idPerson` bigint NOT NULL,
   `ip` varchar(20) NOT NULL,
   PRIMARY KEY (`idPerson`),
   UNIQUE KEY `ipPerson_UNIQUE` (`idPerson`),
-  CONSTRAINT `idPersonNotAuthenticatedRef` FOREIGN KEY (`idPerson`) REFERENCES `persons` (`idPerson`)
+  CONSTRAINT `idPersonNotAuthenticatedRef` FOREIGN KEY (`idPerson`) REFERENCES `people` (`idPerson`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
--- Dumping data for table `usersNotAuthenticated`
+-- Dumping data for table `usersnotauthenticated`
 --
 
-LOCK TABLES `usersNotAuthenticated` WRITE;
-/*!40000 ALTER TABLE `usersNotAuthenticated` DISABLE KEYS */;
-/*!40000 ALTER TABLE `usersNotAuthenticated` ENABLE KEYS */;
+LOCK TABLES `usersnotauthenticated` WRITE;
+/*!40000 ALTER TABLE `usersnotauthenticated` DISABLE KEYS */;
+/*!40000 ALTER TABLE `usersnotauthenticated` ENABLE KEYS */;
 UNLOCK TABLES;
+
+--
+-- Dumping routines for database 'fllibrutti'
+--
 /*!40103 SET TIME_ZONE=@OLD_TIME_ZONE */;
 
 /*!40101 SET SQL_MODE=@OLD_SQL_MODE */;
@@ -182,4 +186,4 @@ UNLOCK TABLES;
 /*!40101 SET COLLATION_CONNECTION=@OLD_COLLATION_CONNECTION */;
 /*!40111 SET SQL_NOTES=@OLD_SQL_NOTES */;
 
--- Dump completed on 2025-12-30 17:14:59
+-- Dump completed on 2025-12-30 22:36:41
