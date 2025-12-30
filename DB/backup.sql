@@ -131,6 +131,8 @@ DROP TABLE IF EXISTS `users`;
 CREATE TABLE `users` (
   `idPerson` bigint NOT NULL,
   `type` varchar(15) NOT NULL,
+  `email` varchar(100) NOT NULL,
+  `password` varchar(100) DEFAULT NULL,
   UNIQUE KEY `idPerson_UNIQUE` (`idPerson`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
@@ -176,4 +178,4 @@ UNLOCK TABLES;
 /*!40101 SET COLLATION_CONNECTION=@OLD_COLLATION_CONNECTION */;
 /*!40111 SET SQL_NOTES=@OLD_SQL_NOTES */;
 
--- Dump completed on 2025-12-30 14:48:12
+-- Dump completed on 2025-12-30 15:16:39
