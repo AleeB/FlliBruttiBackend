@@ -11,5 +11,5 @@ public partial class UsersNotAuthenticated
 
     public virtual Person IdPersonNavigation { get; set; } = null!;
 
-    public virtual ICollection<Preventivi> Preventivis { get; set; } = new List<Preventivi>();
+    public virtual ICollection<Preventivo> Preventivi { get; set; } = new List<Preventivo>();
 }

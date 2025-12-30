@@ -12,4 +12,12 @@
     <PackageReference Include="Pomelo.EntityFrameworkCore.MySql" Version="8.0.3" />
   </ItemGroup>
 
+  <ItemGroup>
+    <Folder Include="Database/" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="../FlliBrutti.Backend.Application/FlliBrutti.Backend.Application.csproj" />
+  </ItemGroup>
+
 </Project>

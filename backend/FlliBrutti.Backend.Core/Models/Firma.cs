@@ -3,9 +3,9 @@ using System.Collections.Generic;
 
 namespace FlliBrutti.Backend.Core.Models;
 
-public partial class Firme
+public partial class Firma
 {
-    public long Idfirme { get; set; }
+    public long Idfirma { get; set; }
 
     public DateTime? Entrata { get; set; }
 

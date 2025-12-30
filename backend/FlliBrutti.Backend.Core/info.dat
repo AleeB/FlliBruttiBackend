@@ -1,0 +1,2 @@
+per effettuare lo scaffolding, posizionarsi con il terminale (cmd) nel progetto *.Core, successivamente inserire questa stringa ed eseguire:
+dotnet tool run dotnet-ef dbcontext scaffold "server=localhost;user=root;password=root2002;database=flliBrutti" Pomelo.EntityFrameworkCore.MySql -o Models -f

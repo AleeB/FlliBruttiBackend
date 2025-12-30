@@ -3,9 +3,9 @@ using System.Collections.Generic;
 
 namespace FlliBrutti.Backend.Core.Models;
 
-public partial class Preventivi
+public partial class Preventivo
 {
-    public long IdPreventivi { get; set; }
+    public long IdPreventivo { get; set; }
 
     public string Description { get; set; } = null!;
 
