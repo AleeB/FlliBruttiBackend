@@ -73,11 +73,11 @@ DROP TABLE IF EXISTS `persons`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
 /*!50503 SET character_set_client = utf8mb4 */;
 CREATE TABLE `persons` (
-  `idperson` bigint NOT NULL AUTO_INCREMENT,
+  `idPerson` bigint NOT NULL AUTO_INCREMENT,
   `name` varchar(50) DEFAULT NULL,
   `surname` varchar(50) DEFAULT NULL,
   `dob` date DEFAULT NULL,
-  PRIMARY KEY (`idperson`)
+  PRIMARY KEY (`idPerson`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
@@ -132,8 +132,10 @@ CREATE TABLE `users` (
   `idPerson` bigint NOT NULL,
   `type` varchar(15) NOT NULL,
   `email` varchar(100) NOT NULL,
-  `password` varchar(100) DEFAULT NULL,
-  UNIQUE KEY `idPerson_UNIQUE` (`idPerson`)
+  `password` varchar(100) NOT NULL,
+  PRIMARY KEY (`idPerson`),
+  UNIQUE KEY `idPerson_UNIQUE` (`idPerson`),
+  CONSTRAINT `idPersonRef` FOREIGN KEY (`idPerson`) REFERENCES `persons` (`idPerson`) ON DELETE CASCADE ON UPDATE CASCADE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
@@ -156,7 +158,9 @@ DROP TABLE IF EXISTS `usersNotAuthenticated`;
 CREATE TABLE `usersNotAuthenticated` (
   `idPerson` bigint NOT NULL,
   `ip` varchar(20) NOT NULL,
-  UNIQUE KEY `ipPerson_UNIQUE` (`idPerson`)
+  PRIMARY KEY (`idPerson`),
+  UNIQUE KEY `ipPerson_UNIQUE` (`idPerson`),
+  CONSTRAINT `idPersonNotAuthenticatedRef` FOREIGN KEY (`idPerson`) REFERENCES `persons` (`idPerson`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
@@ -178,4 +182,4 @@ UNLOCK TABLES;
 /*!40101 SET COLLATION_CONNECTION=@OLD_COLLATION_CONNECTION */;
 /*!40111 SET SQL_NOTES=@OLD_SQL_NOTES */;
 
--- Dump completed on 2025-12-30 15:16:39
+-- Dump completed on 2025-12-30 17:14:59

@@ -11,4 +11,5 @@ public class User
     public string Password { get; set; } = "";      //usare Konscious.Security.Cryptography.Argon2 per hashare la password
 
 
+
 }
