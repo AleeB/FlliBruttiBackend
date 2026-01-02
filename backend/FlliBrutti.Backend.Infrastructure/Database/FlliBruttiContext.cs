@@ -20,6 +20,7 @@ public class FlliBruttiContext : DbContext, IFlliBruttiContext
     public DbSet<Preventivo> Preventivi { get; set; }
     public DbSet<Person> People { get; set; }
 
+
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
         base.OnModelCreating(modelBuilder);
@@ -32,11 +33,11 @@ public class FlliBruttiContext : DbContext, IFlliBruttiContext
         {
             entity.HasKey(e => e.Idfirma).HasName("PRIMARY");
 
-            entity.ToTable("firma");
+            entity.ToTable("firme");
 
             entity.HasIndex(e => e.IdUser, "idUser_idx");
 
-            entity.Property(e => e.Idfirma).HasColumnName("idfirma");
+            entity.Property(e => e.Idfirma).HasColumnName("idFirma");
             entity.Property(e => e.Entrata)
                 .HasColumnType("datetime")
                 .HasColumnName("entrata");
@@ -66,7 +67,7 @@ public class FlliBruttiContext : DbContext, IFlliBruttiContext
         {
             entity.HasKey(e => e.IdPerson).HasName("PRIMARY");
 
-            entity.ToTable("persons");
+            entity.ToTable("people");
 
             entity.Property(e => e.IdPerson).HasColumnName("idPerson");
             entity.Property(e => e.Dob).HasColumnName("dob");

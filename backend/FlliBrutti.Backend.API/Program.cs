@@ -1,36 +1,34 @@
-using Serilog;
+﻿using Serilog;
 using FlliBrutti.Backend.Infrastructure.Database;
 using FlliBrutti.Backend.Application.IContext;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
+using FlliBrutti.Backend.Application.IServices;
+using FlliBrutti.Backend.Application.Services;
 
 var builder = WebApplication.CreateBuilder(args);
 
-
+// Serilog
 Log.Logger = new LoggerConfiguration()
     .WriteTo.Console()
-    .WriteTo.File("log\\", rollingInterval: RollingInterval.Day,
-    retainedFileCountLimit: 7
-    )
-    // set default minimum level
+    .WriteTo.File("log\\", rollingInterval: RollingInterval.Day, retainedFileCountLimit: 7)
     .MinimumLevel.Information()
     .CreateLogger();
 
 builder.Host.UseSerilog();
 
-// Add services to the container.
-// Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
+// 🔴 OBBLIGATORIO
+builder.Services.AddControllers();
+
+// Swagger
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
 
+// Auth
 builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
-    .AddJwtBearer(options =>
-    {
-        options.Authority = builder.Configuration["Authentication:Authority"];
-        options.Audience = builder.Configuration["Authentication:Audience"];
-        options.RequireHttpsMetadata = false;
-    });
+    .AddJwtBearer();
 
+// Db
 builder.Services.AddDbContext<FlliBruttiContext>(opt =>
 {
     opt.UseMySql(
@@ -40,10 +38,10 @@ builder.Services.AddDbContext<FlliBruttiContext>(opt =>
 });
 
 builder.Services.AddScoped<IFlliBruttiContext, FlliBruttiContext>();
+builder.Services.AddScoped<IFirmaService, FirmaService>();
 
 var app = builder.Build();
 
-// Configure the HTTP request pipeline.
 if (app.Environment.IsDevelopment())
 {
     app.UseSwagger();
@@ -52,7 +50,7 @@ if (app.Environment.IsDevelopment())
 
 app.UseHttpsRedirection();
 
-app.UsePathBase("/api/v1/");
+app.UsePathBase("/api/v1");
 
 app.UseRouting();
 
@@ -60,6 +58,5 @@ app.UseAuthentication();
 app.UseAuthorization();
 
 app.MapControllers();
-
 
 app.Run();
