@@ -365,3 +365,4 @@ FodyWeavers.xsd
 #vpp backup files
 *.vpp.bak*
 *.vpp.lck
+*.txt

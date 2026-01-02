@@ -20,4 +20,8 @@
     <ProjectReference Include="../FlliBrutti.Backend.Infrastructure/FlliBrutti.Backend.Infrastructure.csproj" />
   </ItemGroup>
 
+  <ItemGroup>
+    <Folder Include="Controllers/" />
+  </ItemGroup>
+
 </Project>
