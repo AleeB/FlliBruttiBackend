@@ -29,11 +29,11 @@ namespace FlliBrutti.Backend.API.Controllers
         public async Task<ActionResult<IEnumerable<Firma>>> GetFirmeOfUser(long idUser)
         {
             _logger.LogInformation($"Getting Firme of User with Id: {idUser}");
-            var firme = _service.GetFirmaByIdUser(idUser);
+            var firme = await _service.GetFirmaByIdUserAsync(idUser);
             if (firme == null || firme.Count() == 0)
             {
                 _logger.LogWarning($"No Firme found for User with Id: {idUser}");
-                return NotFound();
+                return NotFound($"No Firme found for User with Id: {idUser}");
             }
             else
             {
@@ -43,7 +43,7 @@ namespace FlliBrutti.Backend.API.Controllers
         }
 
         [HttpPost]
-        [Route("Entry/{idUser}")]
+        [Route("Entry")]
         public async Task<IActionResult> Entry(long idUser)
         {
             _logger.LogInformation($"Creating Firma for User with Id: {idUser}");
@@ -51,7 +51,7 @@ namespace FlliBrutti.Backend.API.Controllers
             if (!res)
             {
                 _logger.LogWarning($"Could not create Firma for User with Id: {idUser}, It does not exist");
-                return BadRequest($"Could not create Firma for user with Id: {idUser}, It does not exist");
+                return NotFound($"Could not create Firma for user with Id: {idUser}, It does not exist");
             }
             else
             {
@@ -61,19 +61,19 @@ namespace FlliBrutti.Backend.API.Controllers
         }
 
         [HttpPost]
-        [Route("Exit/{idFirma}")]
-        public async Task<IActionResult> Exit(long idFirma)
+        [Route("Exit")]
+        public async Task<IActionResult> Exit(long idUser, DateOnly date)
         {
-            _logger.LogInformation($"Exiting Firma with Id: {idFirma}");
-            var res = await _service.ExitFirma(idFirma);
+            _logger.LogInformation($"Exiting Firma with Id: {idUser} and Date: {date}");
+            var res = await _service.ExitFirma(idUser, date);
             if (!res)
             {
-                _logger.LogWarning($"Could not exit Firma with Id: {idFirma}, It does not exist");
-                return BadRequest($"Could not exit Firma with Id: {idFirma}, It does not exist");
+                _logger.LogWarning($"Could not exit Firma with Id: {idUser} and Date: {date}, It does not exist");
+                return NotFound($"Could not exit Firma with Id: {idUser} and Date: {date}, It does not exist");
             }
             else
             {
-                _logger.LogInformation($"Firma with Id: {idFirma} exited successfully");
+                _logger.LogInformation($"Firma with Id: {idUser} and Date: {date} exited successfully");
                 return Ok("Exited Successfully");
             }
         }

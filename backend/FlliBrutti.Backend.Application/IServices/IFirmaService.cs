@@ -10,7 +10,7 @@ namespace FlliBrutti.Backend.Application.IServices
     public interface IFirmaService
     {
         Task<bool> CreateFirma(long idUser);
-        Task<bool> ExitFirma(long idFirma);
-        IEnumerable<Firma> GetFirmaByIdUser(long idUser);
+        Task<bool> ExitFirma(long idFirma, DateOnly date);
+        Task<IEnumerable<Firma>> GetFirmaByIdUserAsync(long idUser);
     }
 }
