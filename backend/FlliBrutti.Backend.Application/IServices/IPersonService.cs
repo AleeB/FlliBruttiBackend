@@ -6,4 +6,5 @@ namespace FlliBrutti.Backend.Application.IServices;
 public interface IPersonService
 {
     Task<Person> GetPersonById(long id);
+    Task<bool> UpdatePerson(Person person);
 }

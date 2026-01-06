@@ -9,7 +9,9 @@ public partial class UserNotAuthenticated
 
     public string Ip { get; set; } = null!;
 
+    public string Email { get; set; } = null!;
+
     public virtual Person IdPersonNavigation { get; set; } = null!;
 
-    public virtual ICollection<Preventivo> Preventivi { get; set; } = new List<Preventivo>();
+    public virtual ICollection<Preventivo> Preventivis { get; set; } = new List<Preventivo>();
 }

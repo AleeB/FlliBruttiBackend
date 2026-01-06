@@ -5,7 +5,7 @@ namespace FlliBrutti.Backend.Core.Models;
 
 public partial class Preventivo
 {
-    public long IdPreventivo { get; set; }
+    public long IdPreventivi { get; set; }
 
     public string Description { get; set; } = null!;
 

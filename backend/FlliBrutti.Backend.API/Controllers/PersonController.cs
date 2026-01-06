@@ -1,4 +1,5 @@
 using FlliBrutti.Backend.Application.IServices;
+using FlliBrutti.Backend.Core.Models;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 
@@ -29,6 +30,25 @@ namespace FlliBrutti.Backend.API.Controllers
                 return NotFound($"Person with Id: {id} not found.");
             }
             return Ok(res);
+        }
+
+        [HttpPatch]
+        [Route("Update/{id}")]
+        public async Task<IActionResult> Update(long id, [FromBody] Person person)
+        {
+            _logger.LogInformation($"PersonController Update called with Id: {id}");
+            if(person == null || person.IdPerson != id)
+            {
+                _logger.LogWarning($"Invalid Person data provided for Id: {id}, null or mismatched Id.");
+                return BadRequest("Invalid Person data.");
+            }
+            var res = await _service.UpdatePerson(person);
+            if (!res)
+            {
+                _logger.LogWarning($"Failed to update Person with Id: {id}, Person not found.");
+                return NotFound($"Person with Id: {id} not found.");
+            }
+            return NoContent();
         }
     }
 }

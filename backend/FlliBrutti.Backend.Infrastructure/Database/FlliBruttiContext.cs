@@ -19,12 +19,10 @@ public class FlliBruttiContext : DbContext, IFlliBruttiContext
     public DbSet<FormulaPreventivo> FormulaPreventivo { get; set; }
     public DbSet<Preventivo> Preventivi { get; set; }
     public DbSet<Person> People { get; set; }
-
+    
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
-        base.OnModelCreating(modelBuilder);
-
         modelBuilder
             .UseCollation("utf8mb4_0900_ai_ci")
             .HasCharSet("utf8mb4");
@@ -37,7 +35,7 @@ public class FlliBruttiContext : DbContext, IFlliBruttiContext
 
             entity.HasIndex(e => e.IdUser, "idUser_idx");
 
-            entity.Property(e => e.Idfirma).HasColumnName("idFirma");
+            entity.Property(e => e.Idfirma).HasColumnName("idfirme");
             entity.Property(e => e.Entrata)
                 .HasColumnType("datetime")
                 .HasColumnName("entrata");
@@ -47,6 +45,7 @@ public class FlliBruttiContext : DbContext, IFlliBruttiContext
                 .HasColumnName("uscita");
 
             entity.HasOne(d => d.IdUserNavigation).WithMany(p => p.Firme)
+                .HasPrincipalKey(p => p.IdPerson)
                 .HasForeignKey(d => d.IdUser)
                 .OnDelete(DeleteBehavior.Cascade)
                 .HasConstraintName("idUser");
@@ -70,7 +69,7 @@ public class FlliBruttiContext : DbContext, IFlliBruttiContext
             entity.ToTable("people");
 
             entity.Property(e => e.IdPerson).HasColumnName("idPerson");
-            entity.Property(e => e.Dob).HasColumnName("dob");
+            entity.Property(e => e.DOB).HasColumnName("dob");
             entity.Property(e => e.Name)
                 .HasMaxLength(50)
                 .HasColumnName("name");
@@ -81,7 +80,7 @@ public class FlliBruttiContext : DbContext, IFlliBruttiContext
 
         modelBuilder.Entity<Preventivo>(entity =>
         {
-            entity.HasKey(e => e.IdPreventivo).HasName("PRIMARY");
+            entity.HasKey(e => e.IdPreventivi).HasName("PRIMARY");
 
             entity.ToTable("preventivi");
 
@@ -89,7 +88,7 @@ public class FlliBruttiContext : DbContext, IFlliBruttiContext
 
             entity.HasIndex(e => e.IdUser, "idUser_idx");
 
-            entity.Property(e => e.IdPreventivo).HasColumnName("idPreventivo");
+            entity.Property(e => e.IdPreventivi).HasColumnName("idPreventivi");
             entity.Property(e => e.Costo).HasColumnName("costo");
             entity.Property(e => e.Description).HasColumnName("description");
             entity.Property(e => e.IdUser).HasColumnName("idUser");
@@ -98,12 +97,14 @@ public class FlliBruttiContext : DbContext, IFlliBruttiContext
                 .HasDefaultValueSql("'1'")
                 .HasColumnName("is_todo");
 
-            entity.HasOne(d => d.IdUserNavigation).WithMany(p => p.Preventivi)
+            entity.HasOne(d => d.IdUserNavigation).WithMany(p => p.Preventivis)
+                .HasPrincipalKey(p => p.IdPerson)
                 .HasForeignKey(d => d.IdUser)
                 .OnDelete(DeleteBehavior.Cascade)
                 .HasConstraintName("idUserRef");
 
-            entity.HasOne(d => d.IdUserNonAutenticatoNavigation).WithMany(p => p.Preventivi)
+            entity.HasOne(d => d.IdUserNonAutenticatoNavigation).WithMany(p => p.Preventivis)
+                .HasPrincipalKey(p => p.IdPerson)
                 .HasForeignKey(d => d.IdUserNonAutenticato)
                 .OnDelete(DeleteBehavior.Cascade)
                 .HasConstraintName("idUserNonAutenticatoRef");
@@ -111,18 +112,16 @@ public class FlliBruttiContext : DbContext, IFlliBruttiContext
 
         modelBuilder.Entity<User>(entity =>
         {
-            entity.HasKey(e => e.IdPerson).HasName("PRIMARY");
+            entity.HasKey(e => e.Email).HasName("PRIMARY");
 
             entity.ToTable("users");
 
             entity.HasIndex(e => e.IdPerson, "idPerson_UNIQUE").IsUnique();
 
-            entity.Property(e => e.IdPerson)
-                .ValueGeneratedNever()
-                .HasColumnName("idPerson");
             entity.Property(e => e.Email)
                 .HasMaxLength(100)
                 .HasColumnName("email");
+            entity.Property(e => e.IdPerson).HasColumnName("idPerson");
             entity.Property(e => e.Password)
                 .HasMaxLength(100)
                 .HasColumnName("password");
@@ -137,20 +136,21 @@ public class FlliBruttiContext : DbContext, IFlliBruttiContext
 
         modelBuilder.Entity<UserNotAuthenticated>(entity =>
         {
-            entity.HasKey(e => e.IdPerson).HasName("PRIMARY");
+            entity.HasKey(e => e.Email).HasName("PRIMARY");
 
             entity.ToTable("usersNotAuthenticated");
 
             entity.HasIndex(e => e.IdPerson, "ipPerson_UNIQUE").IsUnique();
 
-            entity.Property(e => e.IdPerson)
-                .ValueGeneratedNever()
-                .HasColumnName("idPerson");
+            entity.Property(e => e.Email)
+                .HasMaxLength(45)
+                .HasColumnName("email");
+            entity.Property(e => e.IdPerson).HasColumnName("idPerson");
             entity.Property(e => e.Ip)
                 .HasMaxLength(20)
                 .HasColumnName("ip");
 
-            entity.HasOne(d => d.IdPersonNavigation).WithOne(p => p.UserNotAuthenticated)
+            entity.HasOne(d => d.IdPersonNavigation).WithOne(p => p.UsersNotAuthenticated)
                 .HasForeignKey<UserNotAuthenticated>(d => d.IdPerson)
                 .OnDelete(DeleteBehavior.ClientSetNull)
                 .HasConstraintName("idPersonNotAuthenticatedRef");

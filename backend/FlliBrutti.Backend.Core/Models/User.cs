@@ -1,6 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
-using FlliBrutti.Backend.Core.Entities;
+using FlliBrutti.Backend.Core.Enums;
 
 namespace FlliBrutti.Backend.Core.Models;
 
@@ -18,5 +18,5 @@ public partial class User
 
     public virtual Person IdPersonNavigation { get; set; } = null!;
 
-    public virtual ICollection<Preventivo> Preventivi { get; set; } = new List<Preventivo>();
+    public virtual ICollection<Preventivo> Preventivis { get; set; } = new List<Preventivo>();
 }

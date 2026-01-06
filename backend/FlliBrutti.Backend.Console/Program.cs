@@ -3,5 +3,4 @@ using FlliBrutti.Backend.Core;
 
 
 Console.WriteLine("Hello, World!");
-Greeting.greetings();
 

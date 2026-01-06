@@ -9,8 +9,8 @@ namespace FlliBrutti.Backend.Application.IServices
 {
     public interface IFirmaService
     {
-        Task<bool> CreateFirma(long idUser);
-        Task<bool> ExitFirma(long idFirma, DateOnly date);
+        Task<(bool, string)> CreateFirma(long idUser);
+        Task<(bool, string)> ExitFirma(long idFirma, DateOnly date);
         Task<IEnumerable<Firma>> GetFirmaByIdUserAsync(long idUser);
     }
 }

@@ -1,8 +1,3 @@
-using FlliBrutti.Backend.Application.IContext;
-using FlliBrutti.Backend.Core.Models;
-using Microsoft.AspNetCore.Authorization;
-using Microsoft.AspNetCore.Components;
-using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using FlliBrutti.Backend.Application.IServices;
 using RouteAttribute = Microsoft.AspNetCore.Mvc.RouteAttribute;
@@ -26,7 +21,7 @@ namespace FlliBrutti.Backend.API.Controllers
 
         [HttpGet]
         [Route("Get/{idUser}")]
-        public async Task<ActionResult<IEnumerable<Firma>>> GetFirmeOfUser(long idUser)
+        public async Task<IActionResult> GetFirmeOfUser(long idUser)
         {
             _logger.LogInformation($"Getting Firme of User with Id: {idUser}");
             var firme = await _service.GetFirmaByIdUserAsync(idUser);
@@ -46,30 +41,40 @@ namespace FlliBrutti.Backend.API.Controllers
         [Route("Entry")]
         public async Task<IActionResult> Entry(long idUser)
         {
-            _logger.LogInformation($"Creating Firma for User with Id: {idUser}");
-            var res = await _service.CreateFirma(idUser);
-            if (!res)
+            try
             {
-                _logger.LogWarning($"Could not create Firma for User with Id: {idUser}, It does not exist");
-                return NotFound($"Could not create Firma for user with Id: {idUser}, It does not exist");
+
+                _logger.LogInformation($"Creating Firma for User with Id: {idUser}");
+                var res = await _service.CreateFirma(idUser);
+                if (!res.Item1)
+                {
+                    _logger.LogWarning(res.Item2);
+                    return NotFound(res.Item2);
+                }
+                else
+                {
+                    _logger.LogInformation($"Firma created for User with Id: {idUser}");
+                    return Ok();
+                }
             }
-            else
+            catch (System.Exception ex)
             {
-                _logger.LogInformation($"Firma created for User with Id: {idUser}");
-                return Ok();
+                _logger.LogError(ex, $"Error creating Firma for User with Id: {idUser}. Exception: {ex.Message}");
+                return StatusCode(500, "Internal server error");
             }
         }
 
         [HttpPost]
         [Route("Exit")]
-        public async Task<IActionResult> Exit(long idUser, DateOnly date)
+        public async Task<IActionResult> Exit(long idUser)
         {
+            var date = DateOnly.FromDateTime(DateTime.Now);
             _logger.LogInformation($"Exiting Firma with Id: {idUser} and Date: {date}");
             var res = await _service.ExitFirma(idUser, date);
-            if (!res)
+            if (!res.Item1)
             {
-                _logger.LogWarning($"Could not exit Firma with Id: {idUser} and Date: {date}, It does not exist");
-                return NotFound($"Could not exit Firma with Id: {idUser} and Date: {date}, It does not exist");
+                _logger.LogWarning(res.Item2);
+                return NotFound(res.Item2);
             }
             else
             {

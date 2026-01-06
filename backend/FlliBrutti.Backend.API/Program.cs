@@ -11,7 +11,7 @@ var builder = WebApplication.CreateBuilder(args);
 // Serilog
 Log.Logger = new LoggerConfiguration()
     .WriteTo.Console()
-    .WriteTo.File("log\\", rollingInterval: RollingInterval.Day, retainedFileCountLimit: 7)
+    .WriteTo.File("log/", rollingInterval: RollingInterval.Day, retainedFileCountLimit: 7)
     .MinimumLevel.Information()
     .CreateLogger();
 
@@ -39,6 +39,8 @@ builder.Services.AddDbContext<FlliBruttiContext>(opt =>
 
 builder.Services.AddScoped<IFlliBruttiContext, FlliBruttiContext>();
 builder.Services.AddScoped<IFirmaService, FirmaService>();
+builder.Services.AddScoped<IPersonService, PersonService>();
+builder.Services.AddScoped<IUserService, UserService>();
 
 var app = builder.Build();
 

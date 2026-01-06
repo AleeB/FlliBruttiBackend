@@ -11,9 +11,9 @@ public partial class Person
 
     public string? Surname { get; set; }
 
-    public DateOnly? Dob { get; set; }
+    public DateOnly? DOB { get; set; }
 
     public virtual User? User { get; set; }
 
-    public virtual UserNotAuthenticated? UserNotAuthenticated { get; set; }
+    public virtual UserNotAuthenticated? UsersNotAuthenticated { get; set; }
 }

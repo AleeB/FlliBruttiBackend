@@ -23,12 +23,19 @@ namespace FlliBrutti.Backend.Application.Services
             _logger = logger;
         }
 
-        public async Task<bool> CreateFirma(long idUser)
+        public async Task<(bool, string)> CreateFirma(long idUser)
         {
-            if(await _context.Users.FindAsync(idUser) == null)
+            
+            if(await checkEntryOpens(idUser))
+            {
+                _logger.LogWarning($"User with Id: {idUser} already has an open Firma entry.");
+                return (false, $"User: {idUser} already has an open Firma entry.");
+            }
+
+            if(await _context.Users.AnyAsync(u => u.IdPerson == idUser) == false)
             {
                 _logger.LogWarning($"Attempted to create Firma for non-existent user with Id: {idUser}");
-                return false;
+                return (false, $"User: {idUser} does not exist.");
             }
             await _context.Firme.AddAsync(new Firma
             {
@@ -36,23 +43,33 @@ namespace FlliBrutti.Backend.Application.Services
                 Entrata = DateTime.Now
             });
             await _context.SaveChangesAsync();
-            return true;
+            return (true, "Firma created successfully.");
         }
 
-        public async Task<bool> ExitFirma(long idUser, DateOnly date)
+        private async Task<bool> checkEntryOpens(long idUser)
+        {
+            return await _context.Firme.AnyAsync(f => f.IdUser == idUser && f.Uscita == null);
+        }
+
+        public async Task<(bool, string)> ExitFirma(long idUser, DateOnly date)
         {
             var res = await _context.Firme.Where(x => x.IdUser == idUser && x.Entrata.Value.Date.Equals(date)).FirstOrDefaultAsync();
             if (res == null)
             {
-                return false;
+                return (false, $"No open Firma entry found for the specified user: {idUser} and date.");
             }
+            if(res.Uscita != null)
+            {
+                return (false, $"Firma entry for user: {idUser} on date: {date} is already closed.");
+            }
+
             _context.Firme.Update(new Firma
             {
                 Idfirma = res.Idfirma,
                 Uscita = DateTime.Now
             });
             await _context.SaveChangesAsync();
-            return true;
+            return (true, "Firma exit recorded successfully.");
         }
 
         public async Task<IEnumerable<Firma>> GetFirmaByIdUserAsync(long idUser)
@@ -74,5 +91,6 @@ namespace FlliBrutti.Backend.Application.Services
                 return Enumerable.Empty<Firma>();
             }
         }
+
     }
 }
