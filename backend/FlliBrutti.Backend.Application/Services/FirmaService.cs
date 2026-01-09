@@ -51,23 +51,15 @@ namespace FlliBrutti.Backend.Application.Services
             return await _context.Firme.AnyAsync(f => f.IdUser == idUser && f.Uscita == null);
         }
 
-        public async Task<(bool, string)> ExitFirma(long idUser, DateOnly date)
+        public async Task<(bool, string)> ExitFirma(long idUser)
         {
-            var res = await _context.Firme.Where(x => x.IdUser == idUser && x.Entrata.Value.Date.Equals(date)).FirstOrDefaultAsync();
+            var res = await _context.Firme.Where(x => x.IdUser == idUser && x.Entrata != null && x.Uscita == null).FirstOrDefaultAsync();
             if (res == null)
             {
-                return (false, $"No open Firma entry found for the specified user: {idUser} and date.");
+                return (false, $"No open Firma entry found for the specified user: {idUser}.\nOr the user does not exist.");
             }
-            if(res.Uscita != null)
-            {
-                return (false, $"Firma entry for user: {idUser} on date: {date} is already closed.");
-            }
-
-            _context.Firme.Update(new Firma
-            {
-                Idfirma = res.Idfirma,
-                Uscita = DateTime.Now
-            });
+            res.Uscita = DateTime.Now;
+            _context.Firme.Update(res);
             await _context.SaveChangesAsync();
             return (true, "Firma exit recorded successfully.");
         }

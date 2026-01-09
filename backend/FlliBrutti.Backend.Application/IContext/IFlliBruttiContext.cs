@@ -10,7 +10,7 @@ public interface IFlliBruttiContext
     public DbSet<UserNotAuthenticated> UsersNotAuthenticated { get; set; }
     public DbSet<Firma> Firme { get; set; }
     public DbSet<FormulaPreventivo> FormulaPreventivo { get; set; }
-    public DbSet<Preventivo> Preventivi { get; set; }
+    public DbSet<PreventivoNCC> PreventiviNCC { get; set; }
     public DbSet<Person> People { get; set; }
 
     Task<int> SaveChangesAsync(CancellationToken cancellationToken = default);

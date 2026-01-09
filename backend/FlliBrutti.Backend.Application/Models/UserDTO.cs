@@ -14,7 +14,7 @@ public class UserDTO : PersonDTO
     {
         return new User
         {
-            Type = Type,
+            Type = (int)Type,
             Email = Email,
             Password = Password
         };

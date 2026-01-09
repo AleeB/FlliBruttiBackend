@@ -41,6 +41,8 @@ builder.Services.AddScoped<IFlliBruttiContext, FlliBruttiContext>();
 builder.Services.AddScoped<IFirmaService, FirmaService>();
 builder.Services.AddScoped<IPersonService, PersonService>();
 builder.Services.AddScoped<IUserService, UserService>();
+builder.Services.AddScoped<IPreventivoNCCService, PreventivoNCCService>();
+
 
 var app = builder.Build();
 

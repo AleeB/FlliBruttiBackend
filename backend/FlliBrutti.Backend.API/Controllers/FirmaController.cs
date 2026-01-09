@@ -68,9 +68,9 @@ namespace FlliBrutti.Backend.API.Controllers
         [Route("Exit")]
         public async Task<IActionResult> Exit(long idUser)
         {
-            var date = DateOnly.FromDateTime(DateTime.Now);
+            var date = DateTime.Now;
             _logger.LogInformation($"Exiting Firma with Id: {idUser} and Date: {date}");
-            var res = await _service.ExitFirma(idUser, date);
+            var res = await _service.ExitFirma(idUser);
             if (!res.Item1)
             {
                 _logger.LogWarning(res.Item2);

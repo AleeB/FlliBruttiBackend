@@ -3,15 +3,19 @@ using System.Collections.Generic;
 
 namespace FlliBrutti.Backend.Core.Models;
 
-public partial class Preventivo
+public partial class PreventivoNCC
 {
-    public long IdPreventivi { get; set; }
+    public long IdPreventivo { get; set; }
 
     public string Description { get; set; } = null!;
 
     public double? Costo { get; set; }
 
-    public sbyte? IsTodo { get; set; }
+    public bool IsTodo { get; set; } = true;
+
+    public string? Partenza { get; set; }
+
+    public string? Arrivo { get; set; }
 
     public long? IdUser { get; set; }
 

@@ -17,9 +17,8 @@ public class FlliBruttiContext : DbContext, IFlliBruttiContext
     public DbSet<UserNotAuthenticated> UsersNotAuthenticated { get; set; }
     public DbSet<Firma> Firme { get; set; }
     public DbSet<FormulaPreventivo> FormulaPreventivo { get; set; }
-    public DbSet<Preventivo> Preventivi { get; set; }
+    public DbSet<PreventivoNCC> PreventiviNCC { get; set; }
     public DbSet<Person> People { get; set; }
-    
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
@@ -78,17 +77,20 @@ public class FlliBruttiContext : DbContext, IFlliBruttiContext
                 .HasColumnName("surname");
         });
 
-        modelBuilder.Entity<Preventivo>(entity =>
+        modelBuilder.Entity<PreventivoNCC>(entity =>
         {
-            entity.HasKey(e => e.IdPreventivi).HasName("PRIMARY");
+            entity.HasKey(e => e.IdPreventivo).HasName("PRIMARY");
 
-            entity.ToTable("preventivi");
+            entity.ToTable("preventiviNCC");
 
             entity.HasIndex(e => e.IdUserNonAutenticato, "idUserNonAutenticato_idx");
 
             entity.HasIndex(e => e.IdUser, "idUser_idx");
 
-            entity.Property(e => e.IdPreventivi).HasColumnName("idPreventivi");
+            entity.Property(e => e.IdPreventivo).HasColumnName("idPreventivi");
+            entity.Property(e => e.Arrivo)
+                .HasMaxLength(100)
+                .HasColumnName("arrivo");
             entity.Property(e => e.Costo).HasColumnName("costo");
             entity.Property(e => e.Description).HasColumnName("description");
             entity.Property(e => e.IdUser).HasColumnName("idUser");
@@ -96,14 +98,17 @@ public class FlliBruttiContext : DbContext, IFlliBruttiContext
             entity.Property(e => e.IsTodo)
                 .HasDefaultValueSql("'1'")
                 .HasColumnName("is_todo");
+            entity.Property(e => e.Partenza)
+                .HasMaxLength(100)
+                .HasColumnName("partenza");
 
-            entity.HasOne(d => d.IdUserNavigation).WithMany(p => p.Preventivis)
+            entity.HasOne(d => d.IdUserNavigation).WithMany(p => p.PreventiviNccs)
                 .HasPrincipalKey(p => p.IdPerson)
                 .HasForeignKey(d => d.IdUser)
                 .OnDelete(DeleteBehavior.Cascade)
                 .HasConstraintName("idUserRef");
 
-            entity.HasOne(d => d.IdUserNonAutenticatoNavigation).WithMany(p => p.Preventivis)
+            entity.HasOne(d => d.IdUserNonAutenticatoNavigation).WithMany(p => p.PreventiviNccs)
                 .HasPrincipalKey(p => p.IdPerson)
                 .HasForeignKey(d => d.IdUserNonAutenticato)
                 .OnDelete(DeleteBehavior.Cascade)
@@ -150,10 +155,12 @@ public class FlliBruttiContext : DbContext, IFlliBruttiContext
                 .HasMaxLength(20)
                 .HasColumnName("ip");
 
-            entity.HasOne(d => d.IdPersonNavigation).WithOne(p => p.UsersNotAuthenticated)
+            entity.HasOne(d => d.IdPersonNavigation).WithOne(p => p.UserNotAuthenticated)
                 .HasForeignKey<UserNotAuthenticated>(d => d.IdPerson)
                 .OnDelete(DeleteBehavior.ClientSetNull)
                 .HasConstraintName("idPersonNotAuthenticatedRef");
         });
+
     }
+
 }

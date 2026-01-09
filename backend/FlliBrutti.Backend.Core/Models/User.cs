@@ -8,7 +8,7 @@ public partial class User
 {
     public long IdPerson { get; set; }
 
-    public EType Type { get; set; } = EType.Dipendente;
+    public int Type { get; set; } = 1;      // Default to EType.Dipendente
 
     public string Email { get; set; } = null!;
 
@@ -18,5 +18,5 @@ public partial class User
 
     public virtual Person IdPersonNavigation { get; set; } = null!;
 
-    public virtual ICollection<Preventivo> Preventivis { get; set; } = new List<Preventivo>();
+    public virtual ICollection<PreventivoNCC> PreventiviNccs { get; set; } = new List<PreventivoNCC>();
 }

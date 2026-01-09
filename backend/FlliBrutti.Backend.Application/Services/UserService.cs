@@ -38,7 +38,7 @@ public class UserService : IUserService
             var newUser = new Core.Models.User
             {
                 IdPerson = person.IdPerson,
-                Type = user.Type,
+                Type = (int)user.Type,
                 Email = user.Email,
                 Password = PasswordHash.Hash(user.Password)
             };
