@@ -1,7 +1,7 @@
-using System;
 using FlliBrutti.Backend.Application.IContext;
 using FlliBrutti.Backend.Core.Models;
 using Microsoft.EntityFrameworkCore;
+using System;
 
 namespace FlliBrutti.Backend.Infrastructure.Database;
 
@@ -54,7 +54,7 @@ public class FlliBruttiContext : DbContext, IFlliBruttiContext
         {
             entity
                 .HasNoKey()
-                .ToTable("formulaPreventivo");
+                .ToTable("formulapreventivo");
 
             entity.Property(e => e.CostoKm).HasColumnName("costo_km");
             entity.Property(e => e.PrimoAutista).HasColumnName("primo_autista");
@@ -77,17 +77,39 @@ public class FlliBruttiContext : DbContext, IFlliBruttiContext
                 .HasColumnName("surname");
         });
 
+        modelBuilder.Entity<PreventivoExtra>(entity =>
+        {
+            entity.HasKey(e => e.Id).HasName("PRIMARY");
+
+            entity.ToTable("preventiviextra");
+
+            entity.HasIndex(e => e.IdPreventivo, "idPreventivoRef_idx");
+
+            entity.Property(e => e.Id)
+                .ValueGeneratedOnAdd()
+                .HasColumnName("id");
+            entity.Property(e => e.Costo).HasColumnName("costo");
+            entity.Property(e => e.Description)
+                .HasColumnType("mediumtext")
+                .HasColumnName("description");
+            entity.Property(e => e.IdPreventivo).HasColumnName("idPreventivo");
+
+            entity.HasOne(d => d.IdPreventivoNavigation).WithMany(p => p.PreventivoExtra)
+                .HasForeignKey(d => d.IdPreventivo)
+                .HasConstraintName("idPreventivoRef");
+        });
+
         modelBuilder.Entity<PreventivoNCC>(entity =>
         {
             entity.HasKey(e => e.IdPreventivo).HasName("PRIMARY");
 
-            entity.ToTable("preventiviNCC");
+            entity.ToTable("preventivincc");
 
             entity.HasIndex(e => e.IdUserNonAutenticato, "idUserNonAutenticato_idx");
 
             entity.HasIndex(e => e.IdUser, "idUser_idx");
 
-            entity.Property(e => e.IdPreventivo).HasColumnName("idPreventivi");
+            entity.Property(e => e.IdPreventivo).HasColumnName("idPreventivo");
             entity.Property(e => e.Arrivo)
                 .HasMaxLength(100)
                 .HasColumnName("arrivo");
@@ -102,13 +124,13 @@ public class FlliBruttiContext : DbContext, IFlliBruttiContext
                 .HasMaxLength(100)
                 .HasColumnName("partenza");
 
-            entity.HasOne(d => d.IdUserNavigation).WithMany(p => p.PreventiviNccs)
+            entity.HasOne(d => d.IdUserNavigation).WithMany(p => p.PreventiviNcc)
                 .HasPrincipalKey(p => p.IdPerson)
                 .HasForeignKey(d => d.IdUser)
                 .OnDelete(DeleteBehavior.Cascade)
                 .HasConstraintName("idUserRef");
 
-            entity.HasOne(d => d.IdUserNonAutenticatoNavigation).WithMany(p => p.PreventiviNccs)
+            entity.HasOne(d => d.IdUserNonAutenticatoNavigation).WithMany(p => p.PreventiviNcc)
                 .HasPrincipalKey(p => p.IdPerson)
                 .HasForeignKey(d => d.IdUserNonAutenticato)
                 .OnDelete(DeleteBehavior.Cascade)
@@ -130,9 +152,7 @@ public class FlliBruttiContext : DbContext, IFlliBruttiContext
             entity.Property(e => e.Password)
                 .HasMaxLength(100)
                 .HasColumnName("password");
-            entity.Property(e => e.Type)
-                .HasMaxLength(15)
-                .HasColumnName("type");
+            entity.Property(e => e.Type).HasColumnName("type");
 
             entity.HasOne(d => d.IdPersonNavigation).WithOne(p => p.User)
                 .HasForeignKey<User>(d => d.IdPerson)
@@ -143,7 +163,7 @@ public class FlliBruttiContext : DbContext, IFlliBruttiContext
         {
             entity.HasKey(e => e.Email).HasName("PRIMARY");
 
-            entity.ToTable("usersNotAuthenticated");
+            entity.ToTable("usersnotauthenticated");
 
             entity.HasIndex(e => e.IdPerson, "ipPerson_UNIQUE").IsUnique();
 

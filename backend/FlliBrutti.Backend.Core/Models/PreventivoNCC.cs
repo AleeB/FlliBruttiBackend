@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Text.Json.Serialization;
 
 namespace FlliBrutti.Backend.Core.Models;
 
@@ -24,4 +25,6 @@ public partial class PreventivoNCC
     public virtual User? IdUserNavigation { get; set; }
 
     public virtual UserNotAuthenticated? IdUserNonAutenticatoNavigation { get; set; }
+
+    public virtual ICollection<PreventivoExtra> PreventivoExtra { get; set; } = new List<PreventivoExtra>();
 }

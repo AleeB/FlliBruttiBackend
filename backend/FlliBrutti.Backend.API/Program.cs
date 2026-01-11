@@ -1,18 +1,28 @@
-﻿using Serilog;
-using FlliBrutti.Backend.Infrastructure.Database;
-using FlliBrutti.Backend.Application.IContext;
-using Microsoft.EntityFrameworkCore;
-using Microsoft.AspNetCore.Authentication.JwtBearer;
+﻿using FlliBrutti.Backend.Application.IContext;
 using FlliBrutti.Backend.Application.IServices;
 using FlliBrutti.Backend.Application.Services;
+using FlliBrutti.Backend.Infrastructure.Database;
+using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.EntityFrameworkCore;
+using Serilog;
+using Serilog.Events;
+using Serilog.Sinks.File;
 
 var builder = WebApplication.CreateBuilder(args);
 
 // Serilog
 Log.Logger = new LoggerConfiguration()
-    .WriteTo.Console()
-    .WriteTo.File("log/", rollingInterval: RollingInterval.Day, retainedFileCountLimit: 7)
     .MinimumLevel.Information()
+    .Enrich.FromLogContext()
+    .WriteTo.Console()
+    .WriteTo.Map(
+        keyPropertyName: "SourceContext",
+        configure: (sourceContext, wt) => wt.File(
+            path: $"Logs/{DateTime.Now:yyyy-MM-dd}/{sourceContext}.log",
+            rollingInterval: RollingInterval.Day,
+            outputTemplate: "{Timestamp:HH:mm:ss} [{Level:u3}] {Message:lj}{NewLine}{Exception}"
+        ),
+        sinkMapCountLimit: 50)
     .CreateLogger();
 
 builder.Host.UseSerilog();
@@ -54,7 +64,7 @@ if (app.Environment.IsDevelopment())
 
 app.UseHttpsRedirection();
 
-app.UsePathBase("/api/v1");
+app.UsePathBase("/v1/");
 
 app.UseRouting();
 

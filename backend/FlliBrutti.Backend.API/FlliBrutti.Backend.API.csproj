@@ -10,22 +10,20 @@
   <ItemGroup>
     <PackageReference Include="Microsoft.AspNetCore.Authentication.JwtBearer" Version="8.0.22" />
     <PackageReference Include="Microsoft.AspNetCore.Authorization" Version="8.0.22" />
-    <PackageReference Include="Microsoft.AspNetCore.Authorization.Policy" Version="2.3.0" />
+    <PackageReference Include="Microsoft.AspNetCore.Authorization.Policy" Version="2.3.9" />
     <PackageReference Include="Microsoft.AspNetCore.OpenApi" Version="8.0.22" />
     <PackageReference Include="Serilog" Version="4.3.0" />
     <PackageReference Include="Serilog.AspNetCore" Version="10.0.0" />
+    <PackageReference Include="Serilog.Enrichers.Environment" Version="3.0.1" />
     <PackageReference Include="Serilog.Sinks.Console" Version="6.1.1" />
     <PackageReference Include="Serilog.Sinks.File" Version="7.0.0" />
+    <PackageReference Include="Serilog.Sinks.Map" Version="2.0.0" />
     <PackageReference Include="Swashbuckle.AspNetCore" Version="10.1.0" />
   </ItemGroup>
 
   <ItemGroup>
     <ProjectReference Include="../FlliBrutti.Backend.Application/FlliBrutti.Backend.Application.csproj" />
     <ProjectReference Include="../FlliBrutti.Backend.Infrastructure/FlliBrutti.Backend.Infrastructure.csproj" />
-  </ItemGroup>
-
-  <ItemGroup>
-    <Folder Include="Controllers/" />
   </ItemGroup>
 
 </Project>
