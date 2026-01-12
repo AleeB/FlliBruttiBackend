@@ -5,7 +5,7 @@ using RouteAttribute = Microsoft.AspNetCore.Mvc.RouteAttribute;
 namespace FlliBrutti.Backend.API.Controllers
 {
     //[Authorize(AuthenticationSchemes = "Bearer")]
-    [Route("[controller]")]
+    [Route("api/[controller]")]
     [ApiController]
     public class FirmaController : ControllerBase
     {
@@ -25,16 +25,15 @@ namespace FlliBrutti.Backend.API.Controllers
         {
             _logger.LogInformation($"Getting Firme of User with Id: {idUser}");
             var firme = await _service.GetFirmaByIdUserAsync(idUser);
-            if (firme == null || firme.Count() == 0)
+
+            if (firme == null || !firme.Any())
             {
                 _logger.LogWarning($"No Firme found for User with Id: {idUser}");
                 return NotFound($"No Firme found for User with Id: {idUser}");
             }
-            else
-            {
-                _logger.LogInformation($"Firme found for User with Id: {idUser}");
-                return Ok(firme);
-            }
+
+            _logger.LogInformation($"Found {firme.Count()} Firme for User with Id: {idUser}");
+            return Ok(firme);
         }
 
         [HttpPost]
@@ -43,24 +42,22 @@ namespace FlliBrutti.Backend.API.Controllers
         {
             try
             {
-
                 _logger.LogInformation($"Creating Firma for User with Id: {idUser}");
                 var res = await _service.CreateFirma(idUser);
+
                 if (!res.Item1)
                 {
                     _logger.LogWarning(res.Item2);
                     return NotFound(res.Item2);
                 }
-                else
-                {
-                    _logger.LogInformation($"Firma created for User with Id: {idUser}");
-                    return Ok();
-                }
+
+                _logger.LogInformation($"Firma created for User with Id: {idUser}");
+                return Ok(new { message = res.Item2 });
             }
-            catch (System.Exception ex)
+            catch (Exception ex)
             {
                 _logger.LogError(ex, $"Error creating Firma for User with Id: {idUser}. Exception: {ex.Message}");
-                return StatusCode(500, "Internal server error");
+                return StatusCode(500, new { error = "Internal server error", details = ex.Message });
             }
         }
 
@@ -68,18 +65,24 @@ namespace FlliBrutti.Backend.API.Controllers
         [Route("Exit")]
         public async Task<IActionResult> Exit(long idUser)
         {
-            var date = DateTime.Now;
-            _logger.LogInformation($"Exiting Firma with Id: {idUser} and Date: {date}");
-            var res = await _service.ExitFirma(idUser);
-            if (!res.Item1)
+            try
             {
-                _logger.LogWarning(res.Item2);
-                return NotFound(res.Item2);
+                _logger.LogInformation($"Exiting Firma for User with Id: {idUser}");
+                var res = await _service.ExitFirma(idUser);
+
+                if (!res.Item1)
+                {
+                    _logger.LogWarning(res.Item2);
+                    return NotFound(res.Item2);
+                }
+
+                _logger.LogInformation($"User with Id: {idUser} exited successfully");
+                return Ok(new { message = res.Item2 });
             }
-            else
+            catch (Exception ex)
             {
-                _logger.LogInformation($"Firma with Id: {idUser} and Date: {date} exited successfully");
-                return Ok("Exited Successfully");
+                _logger.LogError(ex, $"Error exiting Firma for User with Id: {idUser}. Exception: {ex.Message}");
+                return StatusCode(500, new { error = "Internal server error", details = ex.Message });
             }
         }
     }

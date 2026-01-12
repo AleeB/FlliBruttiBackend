@@ -22,33 +22,57 @@ namespace FlliBrutti.Backend.API.Controllers
         [Route("Get/{id}")]
         public async Task<IActionResult> Get(long id)
         {
-            _logger.LogInformation($"PersonController Get called with Id: {id}");
-            var res = await _service.GetPersonById(id);
-            if (res == null)
+            try
             {
-                _logger.LogWarning($"Person with Id: {id} not found.");
-                return NotFound($"Person with Id: {id} not found.");
+                _logger.LogInformation($"PersonController Get called with Id: {id}");
+                var res = await _service.GetPersonById(id);
+
+                if (res == null)
+                {
+                    _logger.LogWarning($"Person with Id: {id} not found.");
+                    return NotFound(new { error = $"Person with Id: {id} not found." });
+                }
+
+                _logger.LogInformation($"Person with Id: {id} retrieved successfully");
+                return Ok(res);
             }
-            return Ok(res);
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, $"Error retrieving Person with Id: {id}. Exception: {ex.Message}");
+                return StatusCode(500, new { error = "Internal server error", details = ex.Message });
+            }
         }
 
         [HttpPatch]
         [Route("Update/{id}")]
         public async Task<IActionResult> Update(long id, [FromBody] Person person)
         {
-            _logger.LogInformation($"PersonController Update called with Id: {id}");
-            if(person == null || person.IdPerson != id)
+            try
             {
-                _logger.LogWarning($"Invalid Person data provided for Id: {id}, null or mismatched Id.");
-                return BadRequest("Invalid Person data.");
+                _logger.LogInformation($"PersonController Update called with Id: {id}");
+
+                if (person == null || person.IdPerson != id)
+                {
+                    _logger.LogWarning($"Invalid Person data provided for Id: {id}, null or mismatched Id.");
+                    return BadRequest(new { error = "Invalid Person data.", details = "Person is null or Id mismatch" });
+                }
+
+                var res = await _service.UpdatePerson(person);
+
+                if (!res)
+                {
+                    _logger.LogWarning($"Failed to update Person with Id: {id}, Person not found.");
+                    return NotFound(new { error = $"Person with Id: {id} not found." });
+                }
+
+                _logger.LogInformation($"Person with Id: {id} updated successfully");
+                return NoContent();
             }
-            var res = await _service.UpdatePerson(person);
-            if (!res)
+            catch (Exception ex)
             {
-                _logger.LogWarning($"Failed to update Person with Id: {id}, Person not found.");
-                return NotFound($"Person with Id: {id} not found.");
+                _logger.LogError(ex, $"Error updating Person with Id: {id}. Exception: {ex.Message}");
+                return StatusCode(500, new { error = "Internal server error", details = ex.Message });
             }
-            return NoContent();
         }
     }
 }

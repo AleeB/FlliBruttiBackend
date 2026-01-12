@@ -1,4 +1,5 @@
-﻿using FlliBrutti.Backend.Core.Models;
+﻿using FlliBrutti.Backend.Application.Responses;
+using FlliBrutti.Backend.Core.Models;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -11,6 +12,6 @@ namespace FlliBrutti.Backend.Application.IServices
     {
         Task<(bool, string)> CreateFirma(long idUser);
         Task<(bool, string)> ExitFirma(long idFirma);
-        Task<IEnumerable<Firma>> GetFirmaByIdUserAsync(long idUser);
+        Task<IEnumerable<FirmaResponseDTO>> GetFirmaByIdUserAsync(long idUser);
     }
 }

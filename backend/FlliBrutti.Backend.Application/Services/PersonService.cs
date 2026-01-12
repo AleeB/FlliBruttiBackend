@@ -1,9 +1,12 @@
-using System;
+using FlliBrutti.Backend.Application.Extensions;
 using FlliBrutti.Backend.Application.IContext;
 using FlliBrutti.Backend.Application.IServices;
-using FlliBrutti.Backend.Core.Models;
 using FlliBrutti.Backend.Application.Models;
+using FlliBrutti.Backend.Application.Responses;
+using FlliBrutti.Backend.Core.Models;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
+using System;
 
 namespace FlliBrutti.Backend.Application.Services;
 
@@ -18,15 +21,20 @@ public class PersonService : IPersonService
         _logger = logger;
     }
 
-    public async Task<Person> GetPersonById(long id)
+    public async Task<PersonResponseDTO> GetPersonById(long id)
     {
-        var person = await _context.People.FindAsync(id);
+        var person = await _context.People
+            .Include(p => p.User)
+            .Include(p => p.UserNotAuthenticated)
+            .FirstOrDefaultAsync(p => p.IdPerson == id);
+
         if (person == null)
         {
             _logger.LogWarning($"Person with Id: {id} not found.");
             return null;
         }
-        return person;
+
+        return person.ToResponseDTO();
     }
 
     public async Task<bool> UpdatePerson(Person person)
@@ -38,7 +46,6 @@ public class PersonService : IPersonService
             return false;
         }
 
-        // Mark the provided entity as modified so its values are saved
         try
         {
             _context.People.Update(person);

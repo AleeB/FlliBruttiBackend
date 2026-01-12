@@ -1,6 +1,7 @@
 using FlliBrutti.Backend.Application.IContext;
 using FlliBrutti.Backend.Application.IServices;
 using FlliBrutti.Backend.Application.Models;
+using FlliBrutti.Backend.Application.Responses;
 using FlliBrutti.Backend.Core.Enums;
 using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Authorization;
@@ -28,13 +29,22 @@ namespace FlliBrutti.Backend.API.Controllers
         {
             try
             {
+                _logger.LogInformation($"Getting Preventivi with isTodo: {isTodo}");
                 var preventivi = await _service.GetPreventiviToExamineAsync(isTodo);
+
+                if (preventivi == null || !preventivi.Any())
+                {
+                    _logger.LogInformation($"No Preventivi found with isTodo: {isTodo}");
+                    return Ok(new List<PreventivoNCCResponseDTO>());
+                }
+
+                _logger.LogInformation($"Found {preventivi.Count()} Preventivi with isTodo: {isTodo}");
                 return Ok(preventivi);
             }
             catch (Exception ex)
             {
                 _logger.LogError(ex, "Error retrieving Preventivi to examine");
-                return StatusCode(500, "Internal server error");
+                return StatusCode(500, new { error = "Internal server error", details = ex.Message });
             }
         }
 
@@ -44,20 +54,28 @@ namespace FlliBrutti.Backend.API.Controllers
         {
             try
             {
+                if (preventivo == null)
+                {
+                    _logger.LogWarning("AddPreventivo called with null preventivo");
+                    return BadRequest(new { error = "Preventivo data is required" });
+                }
+
+                _logger.LogInformation($"Adding new Preventivo for UserNonAutenticato with Id: {preventivo.IdUserNonAutenticato}");
                 var res = await _service.AddPreventivoNCCAsync(preventivo);
+
                 if (res.Item1)
                 {
-                    return Ok(res.Item2);
+                    _logger.LogInformation("Preventivo added successfully");
+                    return Ok(new { message = res.Item2 });
                 }
-                else
-                {
-                    return BadRequest(res.Item2);
-                }
+
+                _logger.LogWarning($"Failed to add Preventivo: {res.Item2}");
+                return BadRequest(new { error = res.Item2 });
             }
             catch (Exception ex)
             {
                 _logger.LogError(ex, "Error adding Preventivo");
-                return StatusCode(500, "Internal server error");
+                return StatusCode(500, new { error = "Internal server error", details = ex.Message });
             }
         }
 
@@ -67,20 +85,22 @@ namespace FlliBrutti.Backend.API.Controllers
         {
             try
             {
+                _logger.LogInformation($"Getting Preventivo with Id: {id}");
                 var preventivo = await _service.GetPreventivoByIdAsync(id);
-                if (preventivo != null)
+
+                if (preventivo == null)
                 {
-                    return Ok(preventivo);
+                    _logger.LogWarning($"Preventivo with Id: {id} not found");
+                    return NotFound(new { error = $"Preventivo with Id: {id} not found" });
                 }
-                else
-                {
-                    return NotFound("Preventivo not found");
-                }
+
+                _logger.LogInformation($"Preventivo with Id: {id} retrieved successfully");
+                return Ok(preventivo);
             }
             catch (Exception ex)
             {
-                _logger.LogError(ex, "Error retrieving Preventivo by ID");
-                return StatusCode(500, "Internal server error");
+                _logger.LogError(ex, $"Error retrieving Preventivo with Id: {id}");
+                return StatusCode(500, new { error = "Internal server error", details = ex.Message });
             }
         }
 
@@ -90,23 +110,37 @@ namespace FlliBrutti.Backend.API.Controllers
         {
             try
             {
-                _logger.LogInformation("Starting update of Preventivo with ID: {IdPreventivo}", idPreventivo);
+                if (preventivo == null)
+                {
+                    _logger.LogWarning($"AddPreventivoCalculated called with null preventivo for Id: {idPreventivo}");
+                    return BadRequest(new { error = "Preventivo data is required" });
+                }
+
+                _logger.LogInformation($"Starting update of Preventivo with Id: {idPreventivo}");
+
                 var res = await _service.GetPreventivoByIdAsync(idPreventivo);
                 if (res == null)
                 {
-                    _logger.LogWarning("Preventivo with ID: {IdPreventivo} not found", idPreventivo);
-                    return NotFound("Preventivo was not Found");
+                    _logger.LogWarning($"Preventivo with Id: {idPreventivo} not found");
+                    return NotFound(new { error = "Preventivo not found" });
                 }
+
                 var updateRes = await _service.UpdatePreventivoNCCAsync(idPreventivo, preventivo);
-                _logger.LogInformation("Successfully updated Preventivo with ID: {IdPreventivo}", idPreventivo);
-                return Ok("Preventivo updated successfully");
+
+                if (!updateRes)
+                {
+                    _logger.LogWarning($"Failed to update Preventivo with Id: {idPreventivo}");
+                    return BadRequest(new { error = "Failed to update Preventivo" });
+                }
+
+                _logger.LogInformation($"Successfully updated Preventivo with Id: {idPreventivo}");
+                return Ok(new { message = "Preventivo updated successfully" });
             }
             catch (Exception ex)
             {
-                _logger.LogError(ex.Message);
-                return StatusCode(500, ex.StackTrace);
+                _logger.LogError(ex, $"Error updating Preventivo with Id: {idPreventivo}");
+                return StatusCode(500, new { error = "Internal server error", details = ex.Message, stackTrace = ex.StackTrace });
             }
-
         }
 
     }
