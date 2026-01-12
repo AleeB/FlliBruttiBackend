@@ -62,9 +62,9 @@ public class PreventivoNCCService : IPreventivoNCCService
         {
             var preventivi = await _context.PreventiviNCC
                 .Include(p => p.IdUserNavigation)
-                    .ThenInclude(u => u.IdPersonNavigation)
+                    .ThenInclude(u => u!.IdPersonNavigation)
                 .Include(p => p.IdUserNonAutenticatoNavigation)
-                    .ThenInclude(u => u.IdPersonNavigation)
+                    .ThenInclude(u => u!.IdPersonNavigation)
                 .Include(p => p.PreventivoExtra)
                 .Where(p => p.IsTodo == isTodo)
                 .ToListAsync();
@@ -84,16 +84,16 @@ public class PreventivoNCCService : IPreventivoNCCService
         {
             var preventivo = await _context.PreventiviNCC
                 .Include(p => p.IdUserNavigation)
-                    .ThenInclude(u => u.IdPersonNavigation)
+                    .ThenInclude(u => u!.IdPersonNavigation)
                 .Include(p => p.IdUserNonAutenticatoNavigation)
-                    .ThenInclude(u => u.IdPersonNavigation)
+                    .ThenInclude(u => u!.IdPersonNavigation)
                 .Include(p => p.PreventivoExtra)
                 .FirstOrDefaultAsync(p => p.IdPreventivo == id);
 
             if (preventivo == null)
             {
                 _logger.LogWarning($"Preventivo with Id: {id} not found");
-                return null;
+                return null!;
             }
 
             return preventivo.ToResponseDTO();
@@ -101,7 +101,7 @@ public class PreventivoNCCService : IPreventivoNCCService
         catch (Exception ex)
         {
             _logger.LogError(ex, $"Error retrieving Preventivo with Id: {id}");
-            return null;
+            return null!;
         }
     }
 
