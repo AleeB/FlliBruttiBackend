@@ -49,7 +49,7 @@ namespace FlliBrutti.Backend.API.Controllers
         }
 
         [HttpPost]
-        [Route("AddPreventivo")]
+        [Route("Add")]
         public async Task<IActionResult> AddPreventivo([FromBody] PreventivoNCCDTO preventivo)
         {
             try
@@ -80,7 +80,7 @@ namespace FlliBrutti.Backend.API.Controllers
         }
 
         [HttpGet]
-        [Route("GetPreventivoById/{id}")]
+        [Route("Get/{id}")]
         public async Task<IActionResult> GetPreventivoById(long id)
         {
             try

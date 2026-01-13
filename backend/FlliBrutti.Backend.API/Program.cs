@@ -1,12 +1,11 @@
 ﻿using FlliBrutti.Backend.Application.IContext;
+using FlliBrutti.Backend.Application.ICrittography;
 using FlliBrutti.Backend.Application.IServices;
 using FlliBrutti.Backend.Application.Services;
 using FlliBrutti.Backend.Infrastructure.Database;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.EntityFrameworkCore;
 using Serilog;
-using Serilog.Events;
-using Serilog.Sinks.File;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -47,11 +46,28 @@ builder.Services.AddDbContext<FlliBruttiContext>(opt =>
     );
 });
 
+// Context for Db and Translation
 builder.Services.AddScoped<IFlliBruttiContext, FlliBruttiContext>();
+
+// Application Services
 builder.Services.AddScoped<IFirmaService, FirmaService>();
 builder.Services.AddScoped<IPersonService, PersonService>();
 builder.Services.AddScoped<IUserService, UserService>();
 builder.Services.AddScoped<IPreventivoNCCService, PreventivoNCCService>();
+builder.Services.AddScoped<ILoginService, LoginService>();
+
+// Crittography must be singleton
+builder.Services.AddSingleton<IPasswordHash, PasswordHash>(sp =>
+{
+    var secret = builder.Configuration["Security:Secret"];
+    if (string.IsNullOrEmpty(secret))
+    {
+        throw new InvalidOperationException("The Secret was not found on AppSettings.Develop.json");
+    }
+    return new PasswordHash(secret);
+});
+
+
 
 
 var app = builder.Build();
