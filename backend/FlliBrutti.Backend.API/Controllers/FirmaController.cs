@@ -21,7 +21,7 @@ namespace FlliBrutti.Backend.API.Controllers
         }
 
 
-        [Authorize(Roles = "2")]
+        [Authorize(Roles = "1")]
         [HttpGet]
         [Route("Get/{idUser}")]
         public async Task<IActionResult> GetFirmeOfUser(long idUser)
@@ -39,7 +39,6 @@ namespace FlliBrutti.Backend.API.Controllers
             return Ok(firme);
         }
 
-        [Authorize(Roles = "1")]
         [HttpPost]
         [Route("Entry")]
         public async Task<IActionResult> Entry(long idUser)
@@ -65,7 +64,6 @@ namespace FlliBrutti.Backend.API.Controllers
             }
         }
 
-        [Authorize]
         [HttpPost]
         [Route("Exit")]
         public async Task<IActionResult> Exit(long idUser)
