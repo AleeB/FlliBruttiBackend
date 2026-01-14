@@ -4,14 +4,10 @@ using FlliBrutti.Backend.Application.Responses;
 using FlliBrutti.Backend.Core.Enums;
 using FlliBrutti.Backend.Core.Models;
 using Microsoft.AspNetCore.Authorization;
-using Microsoft.AspNetCore.Http.HttpResults;
-using Microsoft.AspNetCore.HttpLogging;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.AspNetCore.Razor.TagHelpers;
 
 namespace FlliBrutti.Backend.API.Controllers
 {
-
     [Route("api/[controller]")]
     [ApiController]
     public class LoginController : ControllerBase
@@ -45,41 +41,55 @@ namespace FlliBrutti.Backend.API.Controllers
                     return BadRequest(new { error = "Invalid login data" });
                 }
 
+                // 1️⃣ Valida le credenziali
                 var isValid = await _loginService.LoginAsync(login);
                 if (!isValid)
                 {
-                    _logger.LogWarning($"Failed login attempt for email: {login.Email}");
+                    _logger.LogWarning("Failed login attempt for email: {Email}", login.Email);
                     return Unauthorized(new { error = "Email or Password does not match or does not exist" });
                 }
 
-                var user = await _userService.GetUserByEmailAsync(login.Email);
-                if (user == null)
+                // 2️⃣ Ottieni i dati utente (UNA SOLA VOLTA con AsNoTracking)
+                var userResponse = await _userService.GetUserByEmailAsync(login.Email);
+                if (userResponse == null)
                 {
-                    _logger.LogError($"User not found after successful login validation: {login.Email}");
+                    _logger.LogError("User not found after successful login validation: {Email}", login.Email);
                     return StatusCode(500, new { error = "Internal server error" });
                 }
 
-                var ipAddress = HttpContext.Connection.RemoteIpAddress?.ToString() ?? "Unknown";
-                var u = new User
+                // 3️⃣ Crea un oggetto User minimale per il JWT (SENZA caricare dal DB)
+                var userForToken = new User
                 {
-                    IdPerson = user.IdPerson,
-                    Email = user.Email,
-                    Type = ((int)user.Type)
+                    IdPerson = userResponse.IdPerson,
+                    Email = userResponse.Email,
+                    Type = (int)userResponse.Type,
+                    // Aggiungi Person inline per evitare un'altra query
+                    IdPersonNavigation = new Person
+                    {
+                        IdPerson = userResponse.IdPerson,
+                        Name = userResponse.Name,
+                        Surname = userResponse.Surname,
+                        DOB = userResponse.DOB
+                    }
                 };
-                var tokens = await _jwtService.GenerateTokensAsync(u , ipAddress);
 
-                _logger.LogInformation($"User {login.Email} logged in successfully from IP {ipAddress}");
+                // 4️⃣ Genera i token
+                var ipAddress = HttpContext.Connection.RemoteIpAddress?.ToString() ?? "Unknown";
+                var tokens = await _jwtService.GenerateTokensAsync(userForToken, ipAddress);
+
+                _logger.LogInformation("User {Email} logged in successfully from IP {IpAddress}",
+                    login.Email, ipAddress);
 
                 return Ok(new
                 {
                     user = new
                     {
-                        user.IdPerson,
-                        user.Email,
-                        user.Type,
-                        Name = user.Name,
-                        Surname = user.Surname,
-                        DOB = user.DOB
+                        userResponse.IdPerson,
+                        userResponse.Email,
+                        userResponse.Type,
+                        userResponse.Name,
+                        userResponse.Surname,
+                        userResponse.DOB
                     },
                     tokens.AccessToken,
                     tokens.RefreshToken,
@@ -89,7 +99,7 @@ namespace FlliBrutti.Backend.API.Controllers
             }
             catch (Exception ex)
             {
-                _logger.LogError(ex, $"Error during login for email: {login?.Email}");
+                _logger.LogError(ex, "Error during login for email: {Email}", login?.Email);
                 return StatusCode(500, new { error = "Internal server error", details = ex.Message });
             }
         }
@@ -111,11 +121,11 @@ namespace FlliBrutti.Backend.API.Controllers
 
                 if (tokens == null)
                 {
-                    _logger.LogWarning($"Invalid refresh token attempt from IP {ipAddress}");
+                    _logger.LogWarning("Invalid refresh token attempt from IP {IpAddress}", ipAddress);
                     return Unauthorized(new { error = "Invalid or expired refresh token" });
                 }
 
-                _logger.LogInformation($"Token refreshed successfully from IP {ipAddress}");
+                _logger.LogInformation("Token refreshed successfully from IP {IpAddress}", ipAddress);
 
                 return Ok(new
                 {
@@ -149,11 +159,11 @@ namespace FlliBrutti.Backend.API.Controllers
 
                 if (!result)
                 {
-                    _logger.LogWarning($"Failed to revoke token from IP {ipAddress}");
+                    _logger.LogWarning("Failed to revoke token from IP {IpAddress}", ipAddress);
                     return BadRequest(new { error = "Failed to revoke token" });
                 }
 
-                _logger.LogInformation($"Token revoked successfully from IP {ipAddress}");
+                _logger.LogInformation("Token revoked successfully from IP {IpAddress}", ipAddress);
                 return Ok(new { message = "Token revoked successfully" });
             }
             catch (Exception ex)
@@ -167,9 +177,7 @@ namespace FlliBrutti.Backend.API.Controllers
         [Authorize]
         public async Task<IActionResult> Logout([FromBody] RefreshTokenRequest request)
         {
-            // Logout è identico a revoke, ma semanticamente più chiaro
             return await RevokeToken(request);
         }
-
     }
 }

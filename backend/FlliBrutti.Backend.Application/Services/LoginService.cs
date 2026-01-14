@@ -2,23 +2,20 @@
 using FlliBrutti.Backend.Application.ICrittography;
 using FlliBrutti.Backend.Application.IServices;
 using Microsoft.EntityFrameworkCore;
-using Microsoft.EntityFrameworkCore.Metadata;
 using Microsoft.Extensions.Logging;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace FlliBrutti.Backend.Application.Services
 {
     public class LoginService : ILoginService
     {
-        private readonly ILogger _logger;
+        private readonly ILogger<LoginService> _logger;
         private readonly IFlliBruttiContext _context;
         private readonly IPasswordHash _passwordHash;
 
-        public LoginService(ILogger<LoginService> logger, IFlliBruttiContext context, IPasswordHash passwordHash)
+        public LoginService(
+            ILogger<LoginService> logger,
+            IFlliBruttiContext context,
+            IPasswordHash passwordHash)
         {
             _logger = logger;
             _context = context;
@@ -29,24 +26,34 @@ namespace FlliBrutti.Backend.Application.Services
         {
             try
             {
+                // 🔥 IMPORTANTE: AsNoTracking perché è solo verifica
+                // Non serve tracciare l'entità User per il login
                 var user = await _context.Users
+                    .AsNoTracking()
                     .FirstOrDefaultAsync(u => u.Email == login.Email);
-                if (user == null && user == default)
+
+                if (user == null)
                 {
-                    _logger.LogWarning($"Login failed for Email: {login.Email} it does not exist on db");
+                    _logger.LogWarning("Login failed for Email: {Email} - user does not exist",
+                        login.Email);
                     return false;
                 }
-                var res = _passwordHash.VerifyPassword(user.Password, login.Password);      //TODO: fix this (maybe store salt on db too?)
-                if (res == false) {
-                    _logger.LogWarning($"Login failed for Email: {login.Email} incorrect password");
+
+                var isPasswordValid = _passwordHash.VerifyPassword(user.Password, login.Password);
+
+                if (!isPasswordValid)
+                {
+                    _logger.LogWarning("Login failed for Email: {Email} - incorrect password",
+                        login.Email);
                     return false;
                 }
-                _logger.LogInformation($"User logged in successfully: {login.Email}");
+
+                _logger.LogInformation("User logged in successfully: {Email}", login.Email);
                 return true;
             }
             catch (Exception ex)
             {
-                _logger.LogError(ex, $"Error during login for Email: {login.Email}. Exception: {ex.Message}");
+                _logger.LogError(ex, "Error during login for Email: {Email}", login.Email);
                 return false;
             }
         }

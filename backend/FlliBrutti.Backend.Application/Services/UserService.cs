@@ -1,4 +1,3 @@
-using System;
 using FlliBrutti.Backend.Application.IContext;
 using FlliBrutti.Backend.Application.ICrittography;
 using FlliBrutti.Backend.Application.IServices;
@@ -13,9 +12,13 @@ namespace FlliBrutti.Backend.Application.Services;
 public class UserService : IUserService
 {
     private readonly IFlliBruttiContext _context;
-    private readonly ILogger _logger;
+    private readonly ILogger<UserService> _logger;
     private readonly IPasswordHash _passwordHash;
-    public UserService(IFlliBruttiContext context, ILogger<UserService> logger, IPasswordHash passwordHash)
+
+    public UserService(
+        IFlliBruttiContext context,
+        ILogger<UserService> logger,
+        IPasswordHash passwordHash)
     {
         _context = context;
         _logger = logger;
@@ -26,9 +29,10 @@ public class UserService : IUserService
     {
         try
         {
-            if (await _context.Users.AnyAsync(u => u.Email == user.Email))
+            // AsNoTracking per la verifica esistenza
+            if (await _context.Users.AsNoTracking().AnyAsync(u => u.Email == user.Email))
             {
-                _logger.LogWarning($"Attempted to add User with existing Email: {user.Email}");
+                _logger.LogWarning("Attempted to add User with existing Email: {Email}", user.Email);
                 return false;
             }
 
@@ -37,7 +41,7 @@ public class UserService : IUserService
 
             // 2️⃣ salvala
             await _context.People.AddAsync(person);
-            await _context.SaveChangesAsync(); // 👈 qui nasce IdPerson
+            await _context.SaveChangesAsync();
 
             // 3️⃣ usa l'IdPerson generato
             var newUser = new Core.Models.User
@@ -51,32 +55,39 @@ public class UserService : IUserService
             await _context.Users.AddAsync(newUser);
             await _context.SaveChangesAsync();
 
+            _logger.LogInformation("User {Email} added successfully", user.Email);
             return true;
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex,
-                $"Error adding User with Person: {user.Name} | {user.Surname}");
+            _logger.LogError(ex, "Error adding User: {Name} {Surname}",
+                user.Name, user.Surname);
             return false;
         }
     }
 
     public async Task<UserResponseDTO> GetUserByEmailAsync(string email)
     {
-        _logger.LogInformation($"Fetching User with Email: {email}");
+        _logger.LogInformation("Fetching User with Email: {Email}", email);
+
         if (string.IsNullOrEmpty(email))
         {
-            _logger.LogInformation($"Email provided is null: {nameof(email)}");
-            throw new ArgumentNullException("email is null");
+            _logger.LogWarning("Email provided is null or empty");
+            throw new ArgumentNullException(nameof(email), "email is null");
         }
+
+        // 🔥 IMPORTANTE: AsNoTracking per query read-only
         var user = await _context.Users
+            .AsNoTracking()
             .Include(u => u.IdPersonNavigation)
             .FirstOrDefaultAsync(u => u.Email == email);
+
         if (user == null)
         {
-            _logger.LogWarning($"User with Email: {email} not found");
+            _logger.LogWarning("User with Email: {Email} not found", email);
             return null!;
         }
+
         return new UserResponseDTO
         {
             Email = email,
@@ -88,39 +99,28 @@ public class UserService : IUserService
         };
     }
 
-    public async Task<bool> UpdatePassword(string email, string password)
-    {
-        if (password == null)
-        {
-            throw new ArgumentNullException($"Password was null: {password}");
-        }
-        var res = _context.Users.FirstOrDefaultAsync(u => u.Email == email).Result;
-        if (res == null)
-        {
-            _logger.LogWarning($"User was not found email: {email}");
-            return false;
-        }
-        res.Password = _passwordHash.EncryptPassword(password);
-        _context.Users.Update(res);
-        await _context.SaveChangesAsync();
-        return true;
-    }
-
     public async Task<UserResponseDTO> UpdatePasswordAsync(LoginDTO login)
     {
-        _logger.LogInformation($"Updating password for Email: {login.Email}");
-        var user = await _context.Users.Where(u => u.Email == login.Email)
+        _logger.LogInformation("Updating password for Email: {Email}", login.Email);
+
+        // Non usare AsNoTracking perché dobbiamo modificare
+        var user = await _context.Users
             .Include(u => u.IdPersonNavigation)
-            .FirstOrDefaultAsync();
-        if (user == null && user == default)
+            .FirstOrDefaultAsync(u => u.Email == login.Email);
+
+        if (user == null)
         {
-            _logger.LogWarning($"User with Email: {login.Email} not found");
+            _logger.LogWarning("User with Email: {Email} not found", login.Email);
             return null!;
         }
+
         user.Password = _passwordHash.EncryptPassword(login.Password);
-        _context.Users.Update(user);
+
+        // Non serve chiamare Update se l'entità è già tracciata
         await _context.SaveChangesAsync();
-        _logger.LogInformation($"Password updated successfully for Email: {login.Email}");
+
+        _logger.LogInformation("Password updated successfully for Email: {Email}", login.Email);
+
         return new UserResponseDTO
         {
             Email = login.Email,
