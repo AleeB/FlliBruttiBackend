@@ -31,7 +31,7 @@ public class PersonService : IPersonService
         if (person == null)
         {
             _logger.LogWarning($"Person with Id: {id} not found.");
-            return null;
+            return null!;
         }
 
         return person.ToResponseDTO();

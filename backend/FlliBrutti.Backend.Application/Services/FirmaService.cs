@@ -76,7 +76,7 @@ namespace FlliBrutti.Backend.Application.Services
             {
                 var firme = await _context.Firme
                     .Include(f => f.IdUserNavigation)
-                        .ThenInclude(u => u.IdPersonNavigation)
+                        .ThenInclude(u => u!.IdPersonNavigation)
                     .Where(f => f.IdUser == idUser)
                     .ToListAsync();
 
