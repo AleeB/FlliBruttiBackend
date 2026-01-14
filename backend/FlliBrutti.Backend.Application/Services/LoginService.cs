@@ -36,7 +36,11 @@ namespace FlliBrutti.Backend.Application.Services
                     _logger.LogWarning($"Login failed for Email: {login.Email} it does not exist on db");
                     return false;
                 }
-                _passwordHash.VerifyPassword(login.Password, user.Password);
+                var res = _passwordHash.VerifyPassword(login.Password, user.Password);      //TODO: fix this (maybe store salt on db too?)
+                if (res == false) {
+                    _logger.LogWarning($"Login failed for Email: {login.Email} incorrect password");
+                    return false;
+                }
                 _logger.LogInformation($"User logged in successfully: {login.Email}");
                 return true;
             }
