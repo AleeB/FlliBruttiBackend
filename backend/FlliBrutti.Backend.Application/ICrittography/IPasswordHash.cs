@@ -10,6 +10,6 @@ namespace FlliBrutti.Backend.Application.ICrittography
     {
         public string EncryptPassword(string password);
 
-        public bool VerifyPassword(string hash, string password);
+        public bool VerifyPassword(string hashExisting, string passwordToVerify);
     }
 }
