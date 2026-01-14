@@ -64,7 +64,7 @@ public class UserService : IUserService
     public async Task<object> GetUserByEmailAsync(string email)
     {
         _logger.LogInformation($"Fetching User with Email: {email}");
-        if (!string.IsNullOrEmpty(email))
+        if (string.IsNullOrEmpty(email))
         {
             _logger.LogInformation($"Email provided is null: {nameof(email)}");
             throw new ArgumentNullException("email is null");

@@ -7,31 +7,29 @@ namespace FlliBrutti.Backend.Application.Crittography
 {
     public class PasswordHash : IPasswordHash
     {
-        private readonly string _secret;
+        private const int SaltSize = 16; // 128 bit
+        private const int HashSize = 32; // 256 bit
+        private const int Iterations = 4;
+        private const int MemorySize = 65536; // 64 MB
+        private const int DegreeOfParallelism = 1;
+
+        private readonly byte[] _secretKey;
 
         public PasswordHash(string secret)
         {
-            _secret = secret;
+            if (string.IsNullOrEmpty(secret))
+            {
+                throw new ArgumentNullException(nameof(secret), "Secret cannot be null or empty");
+            }
+            _secretKey = Encoding.UTF8.GetBytes(secret);
         }
 
-        const int SaltSize = 16; // 16 bytes
-        const int HashSize = 32; // 32 bytes
-        const int Iterations = 3;
-        const int MemorySize = 65536; // 64 MB
-        const int DegreeOfParallelism = 4;
-
-        /// <summary>
-        /// Cripta una password usando Argon2id con salt e secret
-        /// </summary>
-        /// <param name="password">La password in chiaro</param>
-        /// <returns>L'hash in formato Base64</returns>
         public string EncryptPassword(string password)
         {
             if (string.IsNullOrEmpty(password))
-                throw new ArgumentException("La password non può essere vuota", nameof(password));
-
-            if (string.IsNullOrEmpty(_secret))
-                throw new ArgumentException("Il secret non può essere vuoto", nameof(_secret));
+            {
+                throw new ArgumentNullException(nameof(password), "Password cannot be null or empty");
+            }
 
             // Genera un salt casuale
             byte[] salt = new byte[SaltSize];
@@ -40,62 +38,47 @@ namespace FlliBrutti.Backend.Application.Crittography
                 rng.GetBytes(salt);
             }
 
-            // Combina password e secret
-            string passwordWithSecret = password + _secret;
-            byte[] passwordBytes = Encoding.UTF8.GetBytes(passwordWithSecret);
+            // Hash della password con Argon2
+            byte[] hash = HashPasswordWithSalt(password, salt);
 
-            // Genera l'hash con Argon2id
-            byte[] hash = HashPassword(passwordBytes, salt);
-
-            // Combina salt e hash per memorizzarli insieme
+            // Combina salt + hash
             byte[] hashWithSalt = new byte[SaltSize + HashSize];
             Array.Copy(salt, 0, hashWithSalt, 0, SaltSize);
             Array.Copy(hash, 0, hashWithSalt, SaltSize, HashSize);
 
-            // Restituisce in Base64
+            // Restituisce come Base64
             return Convert.ToBase64String(hashWithSalt);
         }
 
-        /// <summary>
-        /// Verifica se una password corrisponde all'hash memorizzato
-        /// </summary>
-        /// <param name="hashExisting">L'hash memorizzato (Base64)</param>
-        /// <param name="passwordToVerify">La password da verificare</param>
-        /// <returns>True se la password è corretta</returns>
-        public bool VerifyPassword(string hashExisting, string passwordToVerify)
+        public bool VerifyPassword(string hashedPassword, string passwordToVerify)
         {
-            if (string.IsNullOrEmpty(hashExisting))
-                throw new ArgumentException("L'hash non può essere vuoto", nameof(hashExisting));
-
-            if (string.IsNullOrEmpty(passwordToVerify))
-                throw new ArgumentException("La password non può essere vuota", nameof(passwordToVerify));
-
-            if (string.IsNullOrEmpty(_secret))
-                throw new ArgumentException("Il secret non può essere vuoto", nameof(_secret));
+            if (string.IsNullOrEmpty(hashedPassword) || string.IsNullOrEmpty(passwordToVerify))
+            {
+                return false;
+            }
 
             try
             {
-                // Decodifica l'hash memorizzato
-                byte[] hashWithSalt = Convert.FromBase64String(hashExisting);
+                // Decodifica l'hash Base64
+                byte[] hashWithSalt = Convert.FromBase64String(hashedPassword);
 
+                // Verifica che la lunghezza sia corretta
                 if (hashWithSalt.Length != SaltSize + HashSize)
+                {
                     return false;
+                }
 
                 // Estrae salt e hash
                 byte[] salt = new byte[SaltSize];
-                byte[] storedHash = new byte[HashSize];
+                byte[] hash = new byte[HashSize];
                 Array.Copy(hashWithSalt, 0, salt, 0, SaltSize);
-                Array.Copy(hashWithSalt, SaltSize, storedHash, 0, HashSize);
+                Array.Copy(hashWithSalt, SaltSize, hash, 0, HashSize);
 
-                // Combina password e secret
-                string passwordWithSecret = passwordToVerify + _secret;
-                byte[] passwordBytes = Encoding.UTF8.GetBytes(passwordWithSecret);
+                // Hash della password da verificare con lo stesso salt
+                byte[] testHash = HashPasswordWithSalt(passwordToVerify, salt);
 
-                // Genera l'hash con lo stesso salt
-                byte[] newHash = HashPassword(passwordBytes, salt);
-
-                // Confronta gli hash in modo sicuro (constant-time)
-                return CryptographicOperations.FixedTimeEquals(storedHash, newHash);
+                // Confronto constant-time per evitare timing attacks
+                return CryptographicOperations.FixedTimeEquals(hash, testHash);
             }
             catch
             {
@@ -103,21 +86,18 @@ namespace FlliBrutti.Backend.Application.Crittography
             }
         }
 
-        /// <summary>
-        /// Metodo privato che esegue l'hashing con Argon2id
-        /// </summary>
-        private static byte[] HashPassword(byte[] password, byte[] salt)
+        private byte[] HashPasswordWithSalt(string password, byte[] salt)
         {
-            using (var argon2 = new Argon2id(password))
+            using (var argon2 = new Argon2id(Encoding.UTF8.GetBytes(password)))
             {
                 argon2.Salt = salt;
                 argon2.DegreeOfParallelism = DegreeOfParallelism;
                 argon2.MemorySize = MemorySize;
                 argon2.Iterations = Iterations;
+                argon2.KnownSecret = _secretKey;
 
                 return argon2.GetBytes(HashSize);
             }
         }
-
     }
 }
