@@ -8,6 +8,7 @@ using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
 using Microsoft.OpenApi;
+using Microsoft.OpenApi.Models;
 using Serilog;
 using System.Text;
 
@@ -51,7 +52,7 @@ builder.Services.AddSwaggerGen(options =>
         {
             new OpenApiSecurityScheme
             {
-                Reference = new BaseOpenApiReference
+                Reference = new OpenApiReference
                 {
                     Type = ReferenceType.SecurityScheme,
                     Id = "Bearer"
@@ -98,7 +99,7 @@ builder.Services.AddAuthentication(options =>
         {
             if (context.Exception.GetType() == typeof(SecurityTokenExpiredException))
             {
-                context.Response.Headers.Add("Token-Expired", "true");
+                context.Response.Headers.Append("Token-Expired", "true");
             }
             return Task.CompletedTask;
         },
@@ -129,17 +130,17 @@ builder.Services.AddAuthentication(options =>
 
 builder.Services.AddAuthorization();
 
-// CORS (opzionale ma consigliato per frontend)
-builder.Services.AddCors(options =>
-{
-    options.AddPolicy("AllowFrontend", policy =>
-    {
-        policy.WithOrigins("http://localhost:3000", "http://localhost:4200") // Aggiungi l'URL del tuo frontend
-              .AllowAnyHeader()
-              .AllowAnyMethod()
-              .AllowCredentials();
-    });
-});
+//// CORS (opzionale ma consigliato per frontend)       CORS MUST BE DISABLED TO AVOID ATTACKS
+//builder.Services.AddCors(options =>
+//{
+//    options.AddPolicy("AllowFrontend", policy =>
+//    {
+//        policy.WithOrigins("http://localhost:3000", "http://localhost:4200") // Aggiungi l'URL del tuo frontend
+//              .AllowAnyHeader()
+//              .AllowAnyMethod()
+//              .AllowCredentials();
+//    });
+//});
 
 // Database
 builder.Services.AddDbContext<FlliBruttiContext>(opt =>
