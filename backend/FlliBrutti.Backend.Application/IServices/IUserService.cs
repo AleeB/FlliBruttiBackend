@@ -7,6 +7,6 @@ namespace FlliBrutti.Backend.Application.IServices;
 public interface IUserService
 {
     public Task<bool> AddUserAsync(UserDTO user);
-    public Task<object> GetUserByEmailAsync(string email);
+    public Task<UserResponseDTO> GetUserByEmailAsync(string email);
     public Task<UserResponseDTO> UpdatePasswordAsync(LoginDTO login);
 }

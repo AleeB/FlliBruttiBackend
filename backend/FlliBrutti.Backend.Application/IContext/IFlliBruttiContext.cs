@@ -12,6 +12,7 @@ public interface IFlliBruttiContext
     public DbSet<FormulaPreventivo> FormulaPreventivo { get; set; }
     public DbSet<PreventivoNCC> PreventiviNCC { get; set; }
     public DbSet<Person> People { get; set; }
+    public DbSet<RefreshToken> RefreshTokens { get; set; }
 
     Task<int> SaveChangesAsync(CancellationToken cancellationToken = default);
 }

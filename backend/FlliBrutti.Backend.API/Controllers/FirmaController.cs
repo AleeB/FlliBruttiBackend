@@ -1,10 +1,10 @@
 using Microsoft.AspNetCore.Mvc;
 using FlliBrutti.Backend.Application.IServices;
 using RouteAttribute = Microsoft.AspNetCore.Mvc.RouteAttribute;
+using Microsoft.AspNetCore.Authorization;
 
 namespace FlliBrutti.Backend.API.Controllers
 {
-    //[Authorize(AuthenticationSchemes = "Bearer")]
     [Route("api/[controller]")]
     [ApiController]
     public class FirmaController : ControllerBase

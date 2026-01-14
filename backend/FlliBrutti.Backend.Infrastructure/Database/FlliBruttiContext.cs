@@ -10,7 +10,7 @@ public class FlliBruttiContext : DbContext, IFlliBruttiContext
     public FlliBruttiContext(DbContextOptions<FlliBruttiContext> options)
         : base(options)
     {
-        
+
     }
 
     public DbSet<User> Users { get; set; }
@@ -19,6 +19,7 @@ public class FlliBruttiContext : DbContext, IFlliBruttiContext
     public DbSet<FormulaPreventivo> FormulaPreventivo { get; set; }
     public DbSet<PreventivoNCC> PreventiviNCC { get; set; }
     public DbSet<Person> People { get; set; }
+    public DbSet<RefreshToken> RefreshTokens { get; set; }
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
@@ -181,6 +182,40 @@ public class FlliBruttiContext : DbContext, IFlliBruttiContext
                 .HasConstraintName("idPersonNotAuthenticatedRef");
         });
 
+        modelBuilder.Entity<RefreshToken>(entity =>
+        {
+            entity.HasKey(e => e.Id).HasName("PRIMARY");
+
+            entity.ToTable("refreshtokens");
+
+            entity.HasIndex(e => e.Token, "token_idx").IsUnique();
+            entity.HasIndex(e => e.UserId, "userId_idx");
+
+            entity.Property(e => e.Id).HasColumnName("id");
+            entity.Property(e => e.Token)
+                .HasMaxLength(200)
+                .HasColumnName("token");
+            entity.Property(e => e.UserId).HasColumnName("userId");
+            entity.Property(e => e.ExpiresAt)
+                .HasColumnType("datetime")
+                .HasColumnName("expiresAt");
+            entity.Property(e => e.CreatedAt)
+                .HasColumnType("datetime")
+                .HasColumnName("createdAt");
+            entity.Property(e => e.IsRevoked).HasColumnName("isRevoked");
+            entity.Property(e => e.RevokedByIp)
+                .HasMaxLength(50)
+                .HasColumnName("revokedByIp");
+            entity.Property(e => e.RevokedAt)
+                .HasColumnType("datetime")
+                .HasColumnName("revokedAt");
+
+            entity.HasOne(d => d.User).WithMany()
+                .HasPrincipalKey(p => p.IdPerson)
+                .HasForeignKey(d => d.UserId)
+                .OnDelete(DeleteBehavior.Cascade)
+                .HasConstraintName("userId");
+        });
     }
 
 }

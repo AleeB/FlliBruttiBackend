@@ -61,7 +61,7 @@ public class UserService : IUserService
         }
     }
 
-    public async Task<object> GetUserByEmailAsync(string email)
+    public async Task<UserResponseDTO> GetUserByEmailAsync(string email)
     {
         _logger.LogInformation($"Fetching User with Email: {email}");
         if (string.IsNullOrEmpty(email))
@@ -77,7 +77,7 @@ public class UserService : IUserService
             _logger.LogWarning($"User with Email: {email} not found");
             return null!;
         }
-        return new
+        return new UserResponseDTO
         {
             Email = email,
             IdPerson = user.IdPerson,
