@@ -59,7 +59,7 @@ namespace FlliBrutti.Backend.Application.Crittography
         /// <summary>
         /// Verifica se una password corrisponde all'hash memorizzato
         /// </summary>
-        /// <param name="hash">L'hash memorizzato (Base64)</param>
+        /// <param name="hashExisting">L'hash memorizzato (Base64)</param>
         /// <param name="passwordToVerify">La password da verificare</param>
         /// <returns>True se la password è corretta</returns>
         public bool VerifyPassword(string hashExisting, string passwordToVerify)
