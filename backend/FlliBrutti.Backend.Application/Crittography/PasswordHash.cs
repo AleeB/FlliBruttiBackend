@@ -7,12 +7,15 @@ namespace FlliBrutti.Backend.Application.Crittography
 {
     public class PasswordHash : IPasswordHash
     {
+
+
+
         private const int SaltSize = 16; // 128 bit
         private const int HashSize = 32; // 256 bit
         private const int Iterations = 4;
         // MemorySize is in KB for Argon2. 65536 KB = 64 MB is heavy for web apps.
         // Reduce to 8192 KB (8 MB) to avoid large unmanaged allocations per request.
-        private const int MemorySize = 65536; // 8 MB
+        private const int MemorySize = 8192; // 8 MB
         private const int DegreeOfParallelism = 1;
 
         private readonly byte[] _secretKey;
@@ -24,6 +27,8 @@ namespace FlliBrutti.Backend.Application.Crittography
                 throw new ArgumentNullException(nameof(secret), "Secret cannot be null or empty");
             }
             _secretKey = Encoding.UTF8.GetBytes(secret);
+
+
         }
 
         public async Task<string> EncryptPassword(string password)
@@ -90,16 +95,16 @@ namespace FlliBrutti.Backend.Application.Crittography
 
         private byte[] HashPasswordWithSalt(string password, byte[] salt)
         {
-            using (var argon2 = new Argon2id(Encoding.UTF8.GetBytes(password)))
-            {
-                argon2.Salt = salt;
-                argon2.DegreeOfParallelism = DegreeOfParallelism;
-                argon2.MemorySize = MemorySize;
-                argon2.Iterations = Iterations;
-                argon2.KnownSecret = _secretKey;
+            var argon2 = new Argon2id(Encoding.UTF8.GetBytes(password));
+            argon2.Salt = salt;
+            argon2.DegreeOfParallelism = DegreeOfParallelism;
+            argon2.MemorySize = MemorySize;
+            argon2.Iterations = Iterations;
+            argon2.KnownSecret = _secretKey;
 
-                return argon2.GetBytes(HashSize);
-            }
+            var b = argon2.GetBytes(HashSize);
+            argon2.Dispose();
+            return b;
         }
     }
 }

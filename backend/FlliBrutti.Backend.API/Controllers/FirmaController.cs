@@ -6,7 +6,7 @@ using FlliBrutti.Backend.Core.Enums;
 
 namespace FlliBrutti.Backend.API.Controllers
 {
-    [Authorize(AuthenticationSchemes = "Bearer")]
+    [Authorize]
     [Route("api/[controller]")]
     [ApiController]
     public class FirmaController : ControllerBase
