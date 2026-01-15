@@ -49,7 +49,7 @@ public class UserService : IUserService
                 IdPerson = person.IdPerson,
                 Type = (int)user.Type,
                 Email = user.Email,
-                Password = _passwordHash.EncryptPassword(user.Password)
+                Password = await _passwordHash.EncryptPassword(user.Password)
             };
 
             await _context.Users.AddAsync(newUser);
@@ -79,8 +79,17 @@ public class UserService : IUserService
         // 🔥 IMPORTANTE: AsNoTracking per query read-only
         var user = await _context.Users
             .AsNoTracking()
-            .Include(u => u.IdPersonNavigation)
-            .FirstOrDefaultAsync(u => u.Email == email);
+            .Where(u => u.Email == email)
+            .Select(u => new UserResponseDTO
+            {
+                Email = u.Email,
+                IdPerson = u.IdPerson,
+                Type = (EType)u.Type,
+                DOB = u.IdPersonNavigation.DOB,
+                Name = u.IdPersonNavigation.Name,
+                Surname = u.IdPersonNavigation.Surname
+            })
+            .FirstOrDefaultAsync();
 
         if (user == null)
         {
@@ -88,15 +97,7 @@ public class UserService : IUserService
             return null!;
         }
 
-        return new UserResponseDTO
-        {
-            Email = email,
-            IdPerson = user.IdPerson,
-            Type = (EType)user.Type,
-            DOB = user.IdPersonNavigation.DOB,
-            Name = user.IdPersonNavigation.Name,
-            Surname = user.IdPersonNavigation.Surname
-        };
+        return user;
     }
 
     public async Task<UserResponseDTO> UpdatePasswordAsync(LoginDTO login)
@@ -114,8 +115,8 @@ public class UserService : IUserService
             return null!;
         }
 
-        user.Password = _passwordHash.EncryptPassword(login.Password);
-
+        user.Password = await _passwordHash.EncryptPassword(login.Password);
+        
         // Non serve chiamare Update se l'entità è già tracciata
         await _context.SaveChangesAsync();
 

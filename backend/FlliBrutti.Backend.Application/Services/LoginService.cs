@@ -30,7 +30,9 @@ namespace FlliBrutti.Backend.Application.Services
                 // Non serve tracciare l'entità User per il login
                 var user = await _context.Users
                     .AsNoTracking()
-                    .FirstOrDefaultAsync(u => u.Email == login.Email);
+                    .Where(u => u.Email == login.Email)
+                    .Select(u => new { u.Email, u.Password })
+                    .FirstOrDefaultAsync();
 
                 if (user == null)
                 {
@@ -39,7 +41,7 @@ namespace FlliBrutti.Backend.Application.Services
                     return false;
                 }
 
-                var isPasswordValid = _passwordHash.VerifyPassword(user.Password, login.Password);
+                var isPasswordValid = await _passwordHash.VerifyPassword(user.Password, login.Password);
 
                 if (!isPasswordValid)
                 {

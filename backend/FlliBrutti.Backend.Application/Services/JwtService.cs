@@ -1,6 +1,5 @@
 ﻿using FlliBrutti.Backend.Application.IContext;
 using FlliBrutti.Backend.Application.IServices;
-using FlliBrutti.Backend.Application.Models;
 using FlliBrutti.Backend.Application.Responses;
 using FlliBrutti.Backend.Core.Models;
 using Microsoft.EntityFrameworkCore;
@@ -51,25 +50,17 @@ namespace FlliBrutti.Backend.Application.Services
                 var accessTokenExpiration = DateTime.UtcNow.AddHours(_accessTokenExpirationHours);
                 var refreshTokenExpiration = DateTime.UtcNow.AddDays(_refreshTokenExpirationDays);
 
-                // 🔥 CRITICO: Rimuovi tutti i token attivi precedenti dell'utente
-                // Questo previene l'accumulo di token in memoria
-                var oldTokens = await _context.RefreshTokens
-                    .Where(rt => rt.UserId == user.IdPerson && !rt.IsRevoked)
-                    .ToListAsync();
+                // ?? FIX CRITICO #1: ELIMINA FISICAMENTE i vecchi token (non solo revocarli)
+                // Questo previene l'accumulo di 112+ token in memoria
+                var deletedCount = await _context.RefreshTokens
+                    .Where(rt => rt.UserId == user.IdPerson)
+                    .ExecuteDeleteAsync();
 
-                if (oldTokens.Any())
+                if (deletedCount > 0)
                 {
-                    // Revoca i vecchi token invece di eliminarli (per audit)
-                    foreach (var oldToken in oldTokens)
-                    {
-                        oldToken.IsRevoked = true;
-                        oldToken.RevokedAt = DateTime.UtcNow;
-                        oldToken.RevokedByIp = ipAddress;
-                    }
-
                     _logger.LogInformation(
-                        "Revoked {Count} old tokens for user {UserId}",
-                        oldTokens.Count,
+                        "DELETED {Count} old tokens for user {UserId}",
+                        deletedCount,
                         user.IdPerson);
                 }
 
@@ -93,7 +84,7 @@ namespace FlliBrutti.Backend.Application.Services
                 await _context.SaveChangesAsync();
 
                 _logger.LogInformation(
-                    "Generated new tokens for user {Email} from IP {IpAddress}",
+                    "? Generated new tokens for user {Email} from IP {IpAddress}",
                     user.Email,
                     ipAddress);
 
@@ -116,13 +107,31 @@ namespace FlliBrutti.Backend.Application.Services
         {
             try
             {
-                // AsNoTracking per la ricerca iniziale
+                // ?? FIX CRITICO #2: AsNoTracking per non tenere in memoria
                 var storedToken = await _context.RefreshTokens
-                    .Include(rt => rt.User)
-                        .ThenInclude(u => u.IdPersonNavigation)
-                    .FirstOrDefaultAsync(rt => rt.Token == refreshToken);
+                    .AsNoTracking()
+                    .Where(rt => rt.Token == refreshToken)
+                    .Select(rt => new
+                    {
+                        rt.Id,
+                        rt.IsRevoked,
+                        rt.ExpiresAt,
+                        User = new
+                        {
+                            rt.User.IdPerson,
+                            rt.User.Email,
+                            rt.User.Type,
+                            Person = new
+                            {
+                                rt.User.IdPersonNavigation.Name,
+                                rt.User.IdPersonNavigation.Surname,
+                                rt.User.IdPersonNavigation.DOB
+                            }
+                        }
+                    })
+                    .FirstOrDefaultAsync();
 
-                if (storedToken == null || !storedToken.IsActive)
+                if (storedToken == null || storedToken.IsRevoked || storedToken.ExpiresAt <= DateTime.UtcNow)
                 {
                     _logger.LogWarning(
                         "Invalid or expired refresh token attempted from IP {IpAddress}",
@@ -130,15 +139,26 @@ namespace FlliBrutti.Backend.Application.Services
                     return null;
                 }
 
-                // Revoca il vecchio token
-                storedToken.IsRevoked = true;
-                storedToken.RevokedAt = DateTime.UtcNow;
-                storedToken.RevokedByIp = ipAddress;
+                await _context.RefreshTokens
+                    .Where(rt => rt.Id == storedToken.Id)
+                    .ExecuteDeleteAsync();
 
-                await _context.SaveChangesAsync();
+                var user = new User
+                {
+                    IdPerson = storedToken.User.IdPerson,
+                    Email = storedToken.User.Email,
+                    Type = storedToken.User.Type,
+                    Password = string.Empty,
+                    IdPersonNavigation = new Person
+                    {
+                        IdPerson = storedToken.User.IdPerson,
+                        Name = storedToken.User.Person.Name,
+                        Surname = storedToken.User.Person.Surname,
+                        DOB = storedToken.User.Person.DOB
+                    }
+                };
 
-                // Genera nuovi token (che automaticamente revocherà altri vecchi token)
-                return await GenerateTokensAsync(storedToken.User, ipAddress);
+                return await GenerateTokensAsync(user, ipAddress);
             }
             catch (Exception ex)
             {
@@ -154,22 +174,20 @@ namespace FlliBrutti.Backend.Application.Services
                 var storedToken = await _context.RefreshTokens
                     .FirstOrDefaultAsync(rt => rt.Token == refreshToken);
 
-                if (storedToken == null || !storedToken.IsActive)
+                if (storedToken == null)
                 {
                     _logger.LogWarning(
-                        "Attempted to revoke invalid token from IP {IpAddress}",
+                        "Attempted to revoke non-existent token from IP {IpAddress}",
                         ipAddress);
                     return false;
                 }
 
-                storedToken.IsRevoked = true;
-                storedToken.RevokedAt = DateTime.UtcNow;
-                storedToken.RevokedByIp = ipAddress;
-
+                // Elimina invece di revocare
+                _context.RefreshTokens.Remove(storedToken);
                 await _context.SaveChangesAsync();
 
                 _logger.LogInformation(
-                    "Token revoked for user {UserId} from IP {IpAddress}",
+                    "??? Token deleted for user {UserId} from IP {IpAddress}",
                     storedToken.UserId,
                     ipAddress);
                 return true;
@@ -214,9 +232,9 @@ namespace FlliBrutti.Backend.Application.Services
         {
             try
             {
-                var cutoffDate = DateTime.UtcNow.AddDays(-30); // Mantieni log per 30 giorni
+                var cutoffDate = DateTime.UtcNow.AddDays(-7); // Mantieni log per 7 giorni
 
-                // Elimina token scaduti o revocati più vecchi di 30 giorni
+                // Elimina token scaduti o revocati più vecchi di 7 giorni
                 var expiredTokens = await _context.RefreshTokens
                     .Where(rt =>
                         (rt.ExpiresAt < DateTime.UtcNow || rt.IsRevoked) &&
@@ -229,7 +247,7 @@ namespace FlliBrutti.Backend.Application.Services
                     await _context.SaveChangesAsync();
 
                     _logger.LogInformation(
-                        "Cleaned up {Count} expired/revoked tokens older than 30 days",
+                        "??? Cleaned up {Count} expired/revoked tokens older than 7 days",
                         expiredTokens.Count);
                 }
                 else
@@ -278,3 +296,5 @@ namespace FlliBrutti.Backend.Application.Services
         }
     }
 }
+
+

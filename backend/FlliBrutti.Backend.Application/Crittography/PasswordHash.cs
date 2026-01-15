@@ -10,7 +10,9 @@ namespace FlliBrutti.Backend.Application.Crittography
         private const int SaltSize = 16; // 128 bit
         private const int HashSize = 32; // 256 bit
         private const int Iterations = 4;
-        private const int MemorySize = 65536; // 64 MB
+        // MemorySize is in KB for Argon2. 65536 KB = 64 MB is heavy for web apps.
+        // Reduce to 8192 KB (8 MB) to avoid large unmanaged allocations per request.
+        private const int MemorySize = 65536; // 8 MB
         private const int DegreeOfParallelism = 1;
 
         private readonly byte[] _secretKey;
@@ -24,7 +26,7 @@ namespace FlliBrutti.Backend.Application.Crittography
             _secretKey = Encoding.UTF8.GetBytes(secret);
         }
 
-        public string EncryptPassword(string password)
+        public async Task<string> EncryptPassword(string password)
         {
             if (string.IsNullOrEmpty(password))
             {
@@ -50,7 +52,7 @@ namespace FlliBrutti.Backend.Application.Crittography
             return Convert.ToBase64String(hashWithSalt);
         }
 
-        public bool VerifyPassword(string hashedPassword, string passwordToVerify)
+        public async Task<bool> VerifyPassword(string hashedPassword, string passwordToVerify)
         {
             if (string.IsNullOrEmpty(hashedPassword) || string.IsNullOrEmpty(passwordToVerify))
             {

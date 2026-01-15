@@ -8,8 +8,8 @@ namespace FlliBrutti.Backend.Application.ICrittography
 {
     public interface IPasswordHash
     {
-        public string EncryptPassword(string password);
+        public Task<string> EncryptPassword(string password);
 
-        public bool VerifyPassword(string hashExisting, string passwordToVerify);
+        public Task<bool> VerifyPassword(string hashExisting, string passwordToVerify);
     }
 }

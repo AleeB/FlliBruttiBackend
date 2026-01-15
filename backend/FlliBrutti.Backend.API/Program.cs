@@ -187,8 +187,6 @@ app.UsePathBase("/v1/");
 
 app.UseRouting();
 
-app.UseCors("AllowFrontend");
-
 app.UseAuthentication(); // ⚠️ IMPORTANTE: deve essere PRIMA di UseAuthorization
 app.UseAuthorization();
 
