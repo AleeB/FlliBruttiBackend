@@ -7,6 +7,8 @@ namespace FlliBrutti.Backend.Application.Crittography
 {
     public class PasswordHash : IPasswordHash
     {
+
+        Argon2id _argon2;
         private const int SaltSize = 16; // 128 bit
         private const int HashSize = 32; // 256 bit
         private const int Iterations = 4;
@@ -22,6 +24,7 @@ namespace FlliBrutti.Backend.Application.Crittography
                 throw new ArgumentNullException(nameof(secret), "Secret cannot be null or empty");
             }
             _secretKey = Encoding.UTF8.GetBytes(secret);
+            _argon2 = null!;
         }
 
         public async Task<string> EncryptPassword(string password)
@@ -95,16 +98,16 @@ namespace FlliBrutti.Backend.Application.Crittography
             return await Task.Run(() =>
             {
                 // using garantisce che Dispose() venga chiamato automaticamente
-                using (var argon2 = new Argon2id(Encoding.UTF8.GetBytes(password)))
+                using (_argon2 = new Argon2id(Encoding.UTF8.GetBytes(password)))
                 {
-                    argon2.Salt = salt;
-                    argon2.DegreeOfParallelism = DegreeOfParallelism;
-                    argon2.MemorySize = MemorySize;
-                    argon2.Iterations = Iterations;
-                    argon2.KnownSecret = _secretKey;
+                    _argon2.Salt = salt;
+                    _argon2.DegreeOfParallelism = DegreeOfParallelism;
+                    _argon2.MemorySize = MemorySize;
+                    _argon2.Iterations = Iterations;
+                    _argon2.KnownSecret = _secretKey;
 
                     // GetBytes() è sincrono, quindi lo eseguiamo in Task.Run
-                    return argon2.GetBytes(HashSize);
+                    return _argon2.GetBytes(HashSize);
                 }
                 // Qui argon2 viene automaticamente disposed
             });
