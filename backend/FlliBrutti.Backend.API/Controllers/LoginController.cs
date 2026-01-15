@@ -142,8 +142,8 @@ namespace FlliBrutti.Backend.API.Controllers
             }
         }
 
-        [HttpPost("revoke")]
         [Authorize]
+        [HttpPost("revoke")]
         public async Task<IActionResult> RevokeToken([FromBody] RefreshTokenRequest request)
         {
             try
@@ -173,8 +173,8 @@ namespace FlliBrutti.Backend.API.Controllers
             }
         }
 
-        [HttpPost("logout")]
         [Authorize]
+        [HttpPost("logout")]
         public async Task<IActionResult> Logout([FromBody] RefreshTokenRequest request)
         {
             return await RevokeToken(request);

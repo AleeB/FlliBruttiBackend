@@ -1,10 +1,12 @@
 using FlliBrutti.Backend.Application.IServices;
 using FlliBrutti.Backend.Core.Models;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 
 namespace FlliBrutti.Backend.API.Controllers
 {
+    [Authorize(Roles = "1")]
     [Route("api/[controller]")]
     [ApiController]
     public class PersonController : ControllerBase

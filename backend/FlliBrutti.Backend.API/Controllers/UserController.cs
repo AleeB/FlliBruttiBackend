@@ -1,11 +1,13 @@
 using FlliBrutti.Backend.Application.IServices;
 using FlliBrutti.Backend.Application.Models;
 using FlliBrutti.Backend.Application.Responses;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 
 namespace FlliBrutti.Backend.API.Controllers
 {
+
     [Route("api/[controller]")]
     [ApiController]
     public class UserController : ControllerBase
@@ -19,6 +21,7 @@ namespace FlliBrutti.Backend.API.Controllers
             _userService = userService;
         }
 
+        [Authorize(Roles = "1")]        //Admin
         [HttpPost]
         [Route("Add")]
         public async Task<IActionResult> Add([FromBody] UserDTO user)

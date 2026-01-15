@@ -23,6 +23,7 @@ namespace FlliBrutti.Backend.API.Controllers
             _service = service;
         }
 
+        [Authorize(Roles = "1")]
         [HttpGet]
         [Route("GetPreventiviToExamine/{isTodo}")]
         public async Task<IActionResult> GetPreventiviToExamine(bool isTodo)
@@ -79,6 +80,7 @@ namespace FlliBrutti.Backend.API.Controllers
             }
         }
 
+        [Authorize(Roles = "1")]
         [HttpGet]
         [Route("Get/{id}")]
         public async Task<IActionResult> GetPreventivoById(long id)
@@ -104,6 +106,7 @@ namespace FlliBrutti.Backend.API.Controllers
             }
         }
 
+        [Authorize(Roles = "1")]
         [HttpPatch]
         [Route("AddPreventivoCalculated/{idPreventivo}")]
         public async Task<IActionResult> AddPreventivoCalculated([FromBody] PreventivoUpdateNCCDTO preventivo, long idPreventivo)
