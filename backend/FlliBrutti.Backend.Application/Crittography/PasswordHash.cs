@@ -7,14 +7,9 @@ namespace FlliBrutti.Backend.Application.Crittography
 {
     public class PasswordHash : IPasswordHash
     {
-
-
-
         private const int SaltSize = 16; // 128 bit
         private const int HashSize = 32; // 256 bit
         private const int Iterations = 4;
-        // MemorySize is in KB for Argon2. 65536 KB = 64 MB is heavy for web apps.
-        // Reduce to 8192 KB (8 MB) to avoid large unmanaged allocations per request.
         private const int MemorySize = 8192; // 8 MB
         private const int DegreeOfParallelism = 1;
 
@@ -27,8 +22,6 @@ namespace FlliBrutti.Backend.Application.Crittography
                 throw new ArgumentNullException(nameof(secret), "Secret cannot be null or empty");
             }
             _secretKey = Encoding.UTF8.GetBytes(secret);
-
-
         }
 
         public async Task<string> EncryptPassword(string password)
@@ -46,7 +39,7 @@ namespace FlliBrutti.Backend.Application.Crittography
             }
 
             // Hash della password con Argon2
-            byte[] hash = HashPasswordWithSalt(password, salt);
+            byte[] hash = await HashPasswordWithSaltAsync(password, salt);
 
             // Combina salt + hash
             byte[] hashWithSalt = new byte[SaltSize + HashSize];
@@ -82,7 +75,7 @@ namespace FlliBrutti.Backend.Application.Crittography
                 Array.Copy(hashWithSalt, SaltSize, hash, 0, HashSize);
 
                 // Hash della password da verificare con lo stesso salt
-                byte[] testHash = HashPasswordWithSalt(passwordToVerify, salt);
+                byte[] testHash = await HashPasswordWithSaltAsync(passwordToVerify, salt);
 
                 // Confronto constant-time per evitare timing attacks
                 return CryptographicOperations.FixedTimeEquals(hash, testHash);
@@ -93,18 +86,28 @@ namespace FlliBrutti.Backend.Application.Crittography
             }
         }
 
-        private byte[] HashPasswordWithSalt(string password, byte[] salt)
+        /// <summary>
+        /// Versione ottimizzata che usa using per il dispose automatico di Argon2id
+        /// </summary>
+        private async Task<byte[]> HashPasswordWithSaltAsync(string password, byte[] salt)
         {
-            var argon2 = new Argon2id(Encoding.UTF8.GetBytes(password));
-            argon2.Salt = salt;
-            argon2.DegreeOfParallelism = DegreeOfParallelism;
-            argon2.MemorySize = MemorySize;
-            argon2.Iterations = Iterations;
-            argon2.KnownSecret = _secretKey;
+            // Task.Run per eseguire l'operazione CPU-intensive su un thread pool
+            return await Task.Run(() =>
+            {
+                // using garantisce che Dispose() venga chiamato automaticamente
+                using (var argon2 = new Argon2id(Encoding.UTF8.GetBytes(password)))
+                {
+                    argon2.Salt = salt;
+                    argon2.DegreeOfParallelism = DegreeOfParallelism;
+                    argon2.MemorySize = MemorySize;
+                    argon2.Iterations = Iterations;
+                    argon2.KnownSecret = _secretKey;
 
-            var b = argon2.GetBytes(HashSize);
-            argon2.Dispose();
-            return b;
+                    // GetBytes() è sincrono, quindi lo eseguiamo in Task.Run
+                    return argon2.GetBytes(HashSize);
+                }
+                // Qui argon2 viene automaticamente disposed
+            });
         }
     }
 }
