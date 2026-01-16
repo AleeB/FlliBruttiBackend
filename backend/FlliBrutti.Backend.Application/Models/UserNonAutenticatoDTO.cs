@@ -1,5 +1,3 @@
-using System;
-
 namespace FlliBrutti.Backend.Application.Models;
 
 public class UserNonAutenticatoDTO : PersonDTO

@@ -1,7 +1,6 @@
 using FlliBrutti.Backend.Application.IContext;
 using FlliBrutti.Backend.Core.Models;
 using Microsoft.EntityFrameworkCore;
-using System;
 
 namespace FlliBrutti.Backend.Infrastructure.Database;
 

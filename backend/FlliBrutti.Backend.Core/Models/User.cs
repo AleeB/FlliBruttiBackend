@@ -1,8 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using FlliBrutti.Backend.Core.Enums;
-
-namespace FlliBrutti.Backend.Core.Models;
+﻿namespace FlliBrutti.Backend.Core.Models;
 
 public partial class User
 {

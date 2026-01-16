@@ -4,7 +4,6 @@ using FlliBrutti.Backend.Application.IServices;
 using FlliBrutti.Backend.Application.Models;
 using FlliBrutti.Backend.Application.Responses;
 using FlliBrutti.Backend.Core.Enums;
-using FlliBrutti.Backend.Core.Models;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
 
@@ -117,7 +116,7 @@ public class UserService : IUserService
         }
 
         user.Password = await _passwordHash.EncryptPassword(login.Password);
-        
+
         // Non serve chiamare Update se l'entità è già tracciata
         await _context.SaveChangesAsync();
 

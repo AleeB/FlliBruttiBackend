@@ -1,4 +1,3 @@
-using System;
 using FlliBrutti.Backend.Application.Models;
 using FlliBrutti.Backend.Application.Responses;
 using FlliBrutti.Backend.Core.Models;

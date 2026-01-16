@@ -1,8 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Text.Json.Serialization;
-
-namespace FlliBrutti.Backend.Core.Models;
+﻿namespace FlliBrutti.Backend.Core.Models;
 
 public partial class PreventivoNCC
 {

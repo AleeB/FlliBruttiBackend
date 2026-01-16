@@ -1,8 +1,7 @@
-using Microsoft.AspNetCore.Mvc;
 using FlliBrutti.Backend.Application.IServices;
-using RouteAttribute = Microsoft.AspNetCore.Mvc.RouteAttribute;
 using Microsoft.AspNetCore.Authorization;
-using FlliBrutti.Backend.Core.Enums;
+using Microsoft.AspNetCore.Mvc;
+using RouteAttribute = Microsoft.AspNetCore.Mvc.RouteAttribute;
 
 namespace FlliBrutti.Backend.API.Controllers
 {

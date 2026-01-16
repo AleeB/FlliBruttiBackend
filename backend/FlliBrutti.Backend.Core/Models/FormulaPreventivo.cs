@@ -1,7 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-
-namespace FlliBrutti.Backend.Core.Models;
+﻿namespace FlliBrutti.Backend.Core.Models;
 
 public partial class FormulaPreventivo
 {

@@ -1,6 +1,5 @@
 ﻿using FlliBrutti.Backend.Application.Crittography;
 using FlliBrutti.Backend.Application.ICrittography;
-using System.Runtime.CompilerServices;
 using Xunit.Abstractions;
 
 namespace FlliBrutti.Backend.Test

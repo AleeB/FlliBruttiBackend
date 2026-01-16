@@ -1,4 +1,3 @@
-using System;
 using FlliBrutti.Backend.Core.Models;
 using Microsoft.EntityFrameworkCore;
 

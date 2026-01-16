@@ -2,9 +2,7 @@ using FlliBrutti.Backend.Application.IServices;
 using FlliBrutti.Backend.Application.Models;
 using FlliBrutti.Backend.Application.Responses;
 using FlliBrutti.Backend.Core.Enums;
-using FlliBrutti.Backend.Core.Models;
 using Microsoft.AspNetCore.Authorization;
-using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using System.Security.Claims;
 

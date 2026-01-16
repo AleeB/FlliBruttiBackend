@@ -6,7 +6,6 @@ using FlliBrutti.Backend.Application.Responses;
 using FlliBrutti.Backend.Core.Models;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
-using System;
 
 namespace FlliBrutti.Backend.Application.Services;
 

@@ -1,10 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-
-namespace FlliBrutti.Backend.Core.Models
+﻿namespace FlliBrutti.Backend.Core.Models
 {
     public class RefreshToken
     {

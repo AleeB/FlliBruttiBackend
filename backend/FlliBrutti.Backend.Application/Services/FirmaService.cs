@@ -5,11 +5,6 @@ using FlliBrutti.Backend.Application.Responses;
 using FlliBrutti.Backend.Core.Models;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace FlliBrutti.Backend.Application.Services
 {

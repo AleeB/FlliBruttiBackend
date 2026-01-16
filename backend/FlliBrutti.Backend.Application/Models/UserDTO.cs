@@ -1,4 +1,3 @@
-using System;
 using FlliBrutti.Backend.Core.Enums;
 using FlliBrutti.Backend.Core.Models;
 
@@ -24,7 +23,7 @@ public class UserDTO : PersonDTO
     {
         return new Person
         {
-            
+
             Name = Name,
             Surname = Surname,
             DOB = DOB
