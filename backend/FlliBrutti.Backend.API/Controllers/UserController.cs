@@ -62,18 +62,23 @@ namespace FlliBrutti.Backend.API.Controllers
             }
         }
 
+        [Authorize]
         [HttpPatch]
         [Route("UpdatePassword")]
-        [AllowAnonymous]
         public async Task<IActionResult> UpdatePasswordOfUser([FromBody] LoginDTO login)
         {
+            var currentId = Convert.ToInt64(User.Claims.FirstOrDefault(c => c.Type == ClaimTypes.NameIdentifier)?.Value);
             if (login == null)
             {
                 _logger.LogWarning("UpdatePasswordOfUser called with null login data");
                 return BadRequest("UpdatePassword Failed");
             }
             _logger.LogInformation($"UserController UpdatePasswordOfUser called for Email: {login.Email}");
-            var res = await _userService.UpdatePasswordAsync(login);
+            var res = await _userService.UpdatePasswordAsync(new LoginDTO
+            {
+                Email = User.Claims.FirstOrDefault(c => c.Type == "Email")!.Value.ToString(),
+                Password = login.Password
+            });
             if (res != null)
             {
                 _logger.LogInformation($"Password updated successfully for Email: {login.Email}");
