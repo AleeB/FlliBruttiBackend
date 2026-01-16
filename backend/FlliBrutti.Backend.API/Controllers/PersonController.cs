@@ -21,7 +21,6 @@ namespace FlliBrutti.Backend.API.Controllers
         }
 
         [HttpGet]
-        [Route("Get/{id}")]
         public async Task<IActionResult> Get(long id)
         {
             try
@@ -46,7 +45,6 @@ namespace FlliBrutti.Backend.API.Controllers
         }
 
         [HttpPatch]
-        [Route("Update/{id}")]
         public async Task<IActionResult> Update(long id, [FromBody] Person person)
         {
             try

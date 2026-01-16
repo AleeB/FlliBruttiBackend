@@ -23,7 +23,6 @@ namespace FlliBrutti.Backend.API.Controllers
 
         [Authorize(Roles = "1")]
         [HttpGet]
-        [Route("Get/{idUser}")]
         public async Task<IActionResult> GetFirmeOfUser(long idUser)
         {
             _logger.LogInformation($"Getting Firme of User with Id: {idUser}");
@@ -41,10 +40,12 @@ namespace FlliBrutti.Backend.API.Controllers
 
         [HttpPost]
         [Route("Entry")]
-        public async Task<IActionResult> Entry(long idUser)
+        public async Task<IActionResult> Entry()
         {
+            var idUser = Convert.ToInt64(User.Claims.FirstOrDefault(c => c.Type == "NomeIdentifier")?.Value);
             try
             {
+
                 _logger.LogInformation($"Creating Firma for User with Id: {idUser}");
                 var res = await _service.CreateFirma(idUser);
 
@@ -66,8 +67,9 @@ namespace FlliBrutti.Backend.API.Controllers
 
         [HttpPost]
         [Route("Exit")]
-        public async Task<IActionResult> Exit(long idUser)
+        public async Task<IActionResult> Exit()
         {
+            var idUser = Convert.ToInt64(User.Claims.FirstOrDefault(c => c.Type == "NomeIdentifier")?.Value);
             try
             {
                 _logger.LogInformation($"Exiting Firma for User with Id: {idUser}");

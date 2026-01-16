@@ -1,9 +1,12 @@
 using FlliBrutti.Backend.Application.IServices;
 using FlliBrutti.Backend.Application.Models;
 using FlliBrutti.Backend.Application.Responses;
+using FlliBrutti.Backend.Core.Enums;
+using FlliBrutti.Backend.Core.Models;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
+using System.Security.Claims;
 
 namespace FlliBrutti.Backend.API.Controllers
 {
@@ -23,7 +26,6 @@ namespace FlliBrutti.Backend.API.Controllers
 
         [Authorize(Roles = "1")]        //Admin
         [HttpPost]
-        [Route("Add")]
         public async Task<IActionResult> Add([FromBody] UserDTO user)
         {
             try
@@ -64,9 +66,10 @@ namespace FlliBrutti.Backend.API.Controllers
 
         [HttpPatch]
         [Route("UpdatePassword")]
+        [AllowAnonymous]
         public async Task<IActionResult> UpdatePasswordOfUser([FromBody] LoginDTO login)
         {
-            if(login == null)
+            if (login == null)
             {
                 _logger.LogWarning("UpdatePasswordOfUser called with null login data");
                 return BadRequest("UpdatePassword Failed");
@@ -79,6 +82,28 @@ namespace FlliBrutti.Backend.API.Controllers
                 return Ok(res);
             }
             return BadRequest("UpdatePassword Failed");
+        }
+
+        [Authorize]
+        [HttpPatch]
+        [Route("UpdateType")]
+        public async Task<IActionResult> UpdateType(EType type)
+        {
+            var user = Convert.ToInt64(User.Claims.FirstOrDefault(c => c.Type == ClaimTypes.NameIdentifier)?.Value);
+            if (user == 0)
+            {
+                _logger.LogWarning("UpdateTypeOfUser called with null data");
+                return BadRequest("UpdateType Failed");
+            }
+            _logger.LogInformation($"UserController UpdateTypeOfUser called for IdPerson: {user}");
+            UserResponseDTO res = await _userService.UpdateTypeAsync(user, type);
+            if (res == null)
+            {
+                _logger.LogWarning($"Failed to update type for IdPerson: {user}");
+                return BadRequest("UpdateType Failed");
+            }
+            _logger.LogInformation($"Type updated successfully for IdPerson: {res.Email}");
+            return Ok(res);
         }
     }
 }

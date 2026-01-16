@@ -4,6 +4,7 @@ using FlliBrutti.Backend.Application.IServices;
 using FlliBrutti.Backend.Application.Models;
 using FlliBrutti.Backend.Application.Responses;
 using FlliBrutti.Backend.Core.Enums;
+using FlliBrutti.Backend.Core.Models;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
 
@@ -130,6 +131,33 @@ public class UserService : IUserService
             Name = user.IdPersonNavigation.Name,
             Surname = user.IdPersonNavigation.Surname,
             DOB = user.IdPersonNavigation.DOB
+        };
+    }
+
+    public async Task<UserResponseDTO> UpdateTypeAsync(long idUser, EType type)
+    {
+        _logger.LogInformation("Updating type for User IdPerson: {IdPerson} to Type: {Type}", idUser, type);
+
+        var userToUpdate = await _context.Users
+            .Include(u => u.IdPersonNavigation)
+            .FirstOrDefaultAsync(u => u.IdPerson == idUser);
+
+        if (userToUpdate == null || userToUpdate == default)
+        {
+            _logger.LogWarning($"User with Id: {idUser} not found");
+            return null!;
+        }
+        userToUpdate.Type = (int)type;
+        await _context.SaveChangesAsync();
+        _logger.LogInformation($"User type updated successfully for Email: {idUser}");
+        return new UserResponseDTO
+        {
+            Email = userToUpdate.Email,
+            IdPerson = userToUpdate.IdPerson,
+            Type = (EType)userToUpdate.Type,
+            Name = userToUpdate.IdPersonNavigation.Name,
+            Surname = userToUpdate.IdPersonNavigation.Surname,
+            DOB = userToUpdate.IdPersonNavigation.DOB
         };
     }
 }
