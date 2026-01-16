@@ -1,13 +1,8 @@
-using FlliBrutti.Backend.Application.IContext;
 using FlliBrutti.Backend.Application.IServices;
 using FlliBrutti.Backend.Application.Models;
 using FlliBrutti.Backend.Application.Responses;
-using FlliBrutti.Backend.Core.Enums;
-using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Authorization;
-using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.EntityFrameworkCore;
 
 namespace FlliBrutti.Backend.API.Controllers
 {
@@ -26,7 +21,7 @@ namespace FlliBrutti.Backend.API.Controllers
         [Authorize(Roles = "1")]
         [HttpGet]
         [Route("ToExamine")]
-        public async Task<IActionResult> GetPreventiviToExamine([FromBody]bool isTodo)
+        public async Task<IActionResult> GetPreventiviToExamine([FromBody] bool isTodo)
         {
             try
             {
