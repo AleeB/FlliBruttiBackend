@@ -1,4 +1,5 @@
 using FlliBrutti.Backend.Application.IServices;
+using FlliBrutti.Backend.Core.Enums;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using System.Security.Claims;
@@ -21,10 +22,19 @@ namespace FlliBrutti.Backend.API.Controllers
         }
 
 
-        [Authorize(Roles = "1")]
+        [Authorize]
         [HttpGet]
         public async Task<IActionResult> GetFirmeOfUser(long idUser)
         {
+            var role = (EType)Convert.ToInt64(User.Claims.FirstOrDefault(c => c.Type == ClaimTypes.Role)?.Value);
+            var idFetched = Convert.ToInt64(User.Claims.FirstOrDefault(c => c.Type == ClaimTypes.NameIdentifier)?.Value);
+            if (idUser == 0 || idUser == idFetched)
+            {
+                idUser = idFetched;
+            }else if (idUser != 0 && role == EType.Dipendente)
+            {
+                return Unauthorized();
+            }
             _logger.LogInformation($"Getting Firme of User with Id: {idUser}");
             var firme = await _service.GetFirmaByIdUserAsync(idUser);
 
