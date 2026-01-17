@@ -22,7 +22,6 @@ namespace FlliBrutti.Backend.API.Controllers
         }
 
 
-        [Authorize]
         [HttpGet]
         public async Task<IActionResult> GetFirmeOfUser(long idUser)
         {
@@ -31,7 +30,8 @@ namespace FlliBrutti.Backend.API.Controllers
             if (idUser == 0 || idUser == idFetched)
             {
                 idUser = idFetched;
-            }else if (idUser != 0 && role == EType.Dipendente)
+            }
+            else if (idUser != 0 && role == EType.Dipendente)
             {
                 return Unauthorized();
             }
