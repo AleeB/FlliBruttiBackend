@@ -12,5 +12,5 @@ public class PreventivoNCCDTO
 
     public string? Arrivo { get; set; } = "";
 
-    public required long IdUserNonAutenticato { get; set; }
+    public required UserNonAutenticatoDTO UserNonAutenticato { get; set; }
 }

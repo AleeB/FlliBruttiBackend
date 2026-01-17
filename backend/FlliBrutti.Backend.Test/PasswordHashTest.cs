@@ -29,8 +29,8 @@ namespace FlliBrutti.Backend.Test
         [Fact]
         public void DifferentPasswordsShouldNotMatch()
         {
-            var hashed = _passwordHash.EncryptPassword("password123");
-            var isValid = _passwordHash.VerifyPassword(hashed, "wrongpassword");
+            var hashed = _passwordHash.EncryptPassword("password123").Result;
+            var isValid = _passwordHash.VerifyPassword(hashed, "wrongpassword").Result;
 
             Assert.False(isValid, "Different passwords should not match");
             _output.WriteLine("✓ Different passwords correctly rejected");
@@ -39,14 +39,14 @@ namespace FlliBrutti.Backend.Test
         [Fact]
         public void SamePasswordShouldProduceDifferentHashes()
         {
-            var hash1 = _passwordHash.EncryptPassword("testpassword");
-            var hash2 = _passwordHash.EncryptPassword("testpassword");
+            var hash1 = _passwordHash.EncryptPassword("testpassword").Result;
+            var hash2 = _passwordHash.EncryptPassword("testpassword").Result;
 
             Assert.NotEqual(hash1, hash2);
 
             // Ma entrambi dovrebbero verificare correttamente
-            Assert.True(_passwordHash.VerifyPassword(hash1, "testpassword"));
-            Assert.True(_passwordHash.VerifyPassword(hash2, "testpassword"));
+            Assert.True(_passwordHash.VerifyPassword(hash1, "testpassword").Result);
+            Assert.True(_passwordHash.VerifyPassword(hash2, "testpassword").Result);
 
             _output.WriteLine("✓ Salt randomization working correctly");
         }
@@ -74,8 +74,8 @@ namespace FlliBrutti.Backend.Test
         [Fact]
         public void EmptyPasswordShouldThrowException()
         {
-            Assert.Throws<ArgumentNullException>(() => _passwordHash.EncryptPassword(""));
-            Assert.Throws<ArgumentNullException>(() => _passwordHash.EncryptPassword(null!));
+            Assert.Throws<ArgumentNullException>(() => _passwordHash.EncryptPassword("").Result);
+            Assert.Throws<ArgumentNullException>(() => _passwordHash.EncryptPassword(null!).Result);
 
             _output.WriteLine("✓ Empty/null passwords correctly rejected");
         }
@@ -86,8 +86,8 @@ namespace FlliBrutti.Backend.Test
             var result1 = _passwordHash.VerifyPassword("invalid_base64_string", "password");
             var result2 = _passwordHash.VerifyPassword("dGVzdA==", "password"); // too short
 
-            Assert.False(result1, "Invalid hash should return false");
-            Assert.False(result2, "Short hash should return false");
+            Assert.False(result1.Result, "Invalid hash should return false");
+            Assert.False(result2.Result, "Short hash should return false");
 
             _output.WriteLine("✓ Invalid hashes correctly handled");
         }
@@ -97,9 +97,9 @@ namespace FlliBrutti.Backend.Test
         {
             var hashed = _passwordHash.EncryptPassword("Password123");
 
-            Assert.True(_passwordHash.VerifyPassword(hashed, "Password123"));
-            Assert.False(_passwordHash.VerifyPassword(hashed, "password123"));
-            Assert.False(_passwordHash.VerifyPassword(hashed, "PASSWORD123"));
+            Assert.True(_passwordHash.VerifyPassword(hashed.Result, "Password123").Result);
+            Assert.False(_passwordHash.VerifyPassword(hashed.Result, "password123").Result);
+            Assert.False(_passwordHash.VerifyPassword(hashed.Result, "PASSWORD123").Result);
 
             _output.WriteLine("✓ Password verification is case-sensitive");
         }
@@ -111,10 +111,10 @@ namespace FlliBrutti.Backend.Test
             var hashed2 = _passwordHash.EncryptPassword(" password");
             var hashed3 = _passwordHash.EncryptPassword("password ");
 
-            Assert.False(_passwordHash.VerifyPassword(hashed1, " password"));
-            Assert.False(_passwordHash.VerifyPassword(hashed1, "password "));
-            Assert.True(_passwordHash.VerifyPassword(hashed2, " password"));
-            Assert.True(_passwordHash.VerifyPassword(hashed3, "password "));
+            Assert.False(_passwordHash.VerifyPassword(hashed1.Result, " password").Result);
+            Assert.False(_passwordHash.VerifyPassword(hashed1.Result, "password ").Result);
+            Assert.True(_passwordHash.VerifyPassword(hashed2.Result, " password").Result);
+            Assert.True(_passwordHash.VerifyPassword(hashed3.Result, "password ").Result);
 
             _output.WriteLine("✓ Whitespace is treated as part of password");
         }
@@ -149,7 +149,7 @@ namespace FlliBrutti.Backend.Test
             for (int i = 0; i < iterations; i++)
             {
                 var hashed = _passwordHash.EncryptPassword(password);
-                _passwordHash.VerifyPassword(hashed, password);
+                _passwordHash.VerifyPassword(hashed.Result, password);
             }
 
             var elapsed = DateTime.UtcNow - startTime;
@@ -165,8 +165,8 @@ namespace FlliBrutti.Backend.Test
         private bool AreEqual(string pw)
         {
             var hashed = _passwordHash.EncryptPassword(pw);
-            var isValid = _passwordHash.VerifyPassword(hashed, pw);
-            return isValid;
+            var isValid = _passwordHash.VerifyPassword(hashed.Result, pw);
+            return isValid.Result;
         }
     }
 
@@ -189,16 +189,16 @@ namespace FlliBrutti.Backend.Test
             var originalPassword = "MySecurePass123!";
             var hashedPassword = passwordHash.EncryptPassword(originalPassword);
 
-            _output.WriteLine($"User registered with hashed password: {hashedPassword.Substring(0, 20)}...");
+            _output.WriteLine($"User registered with hashed password: {hashedPassword.Result.Substring(0, 20)}...");
 
             // Simula login corretto
-            var loginAttempt1 = passwordHash.VerifyPassword(hashedPassword, originalPassword);
-            Assert.True(loginAttempt1, "Valid login should succeed");
+            var loginAttempt1 = passwordHash.VerifyPassword(hashedPassword.Result, originalPassword);
+            Assert.True(loginAttempt1.Result, "Valid login should succeed");
             _output.WriteLine("✓ Valid login successful");
 
             // Simula login errato
-            var loginAttempt2 = passwordHash.VerifyPassword(hashedPassword, "WrongPassword");
-            Assert.False(loginAttempt2, "Invalid login should fail");
+            var loginAttempt2 = passwordHash.VerifyPassword(hashedPassword.Result, "WrongPassword");
+            Assert.False(loginAttempt2.Result, "Invalid login should fail");
             _output.WriteLine("✓ Invalid login correctly rejected");
         }
 
@@ -217,13 +217,13 @@ namespace FlliBrutti.Backend.Test
             var newHash = passwordHash.EncryptPassword(newPassword);
 
             // La vecchia password non dovrebbe più funzionare con il nuovo hash
-            Assert.False(passwordHash.VerifyPassword(newHash, oldPassword));
+            Assert.False(passwordHash.VerifyPassword(newHash.Result, oldPassword).Result);
 
             // La nuova password dovrebbe funzionare con il nuovo hash
-            Assert.True(passwordHash.VerifyPassword(newHash, newPassword));
+            Assert.True(passwordHash.VerifyPassword(newHash.Result, newPassword).Result);
 
             // Il vecchio hash dovrebbe ancora funzionare con la vecchia password
-            Assert.True(passwordHash.VerifyPassword(oldHash, oldPassword));
+            Assert.True(passwordHash.VerifyPassword(oldHash.Result, oldPassword).Result);
 
             _output.WriteLine("✓ Password change simulation successful");
         }

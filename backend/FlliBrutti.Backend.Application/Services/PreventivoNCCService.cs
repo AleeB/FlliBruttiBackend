@@ -25,12 +25,12 @@ public class PreventivoNCCService : IPreventivoNCCService
         try
         {
             var userExists = await _context.UsersNotAuthenticated
-                .AnyAsync(u => u.IdPerson == preventivo.IdUserNonAutenticato);
+                .AnyAsync(u => u.Email == preventivo.UserNonAutenticato.Email);
 
             if (!userExists)
             {
-                _logger.LogWarning($"UserNotAuthenticated with Id: {preventivo.IdUserNonAutenticato} not found");
-                return (false, $"User non autenticato con Id: {preventivo.IdUserNonAutenticato} non trovato");
+                _logger.LogWarning($"UserNotAuthenticated with Id: {preventivo.UserNonAutenticato.Email} not found");
+                return (false, $"User non autenticato con Id: {preventivo.UserNonAutenticato.Email} non trovato");
             }
 
             var newPreventivo = new PreventivoNCC
@@ -39,7 +39,7 @@ public class PreventivoNCCService : IPreventivoNCCService
                 IsTodo = true,
                 Partenza = preventivo.Partenza,
                 Arrivo = preventivo.Arrivo,
-                IdUserNonAutenticato = preventivo.IdUserNonAutenticato
+                IdUserNonAutenticatoNavigation = preventivo.UserNonAutenticato.ToModel()
             };
 
             await _context.PreventiviNCC.AddAsync(newPreventivo);

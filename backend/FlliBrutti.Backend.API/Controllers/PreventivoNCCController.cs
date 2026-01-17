@@ -55,7 +55,7 @@ namespace FlliBrutti.Backend.API.Controllers
                     return BadRequest(new { error = "Preventivo data is required" });
                 }
 
-                _logger.LogInformation($"Adding new Preventivo for UserNonAutenticato with Id: {preventivo.IdUserNonAutenticato}");
+                _logger.LogInformation($"Adding new Preventivo for UserNonAutenticato with Email: {preventivo.UserNonAutenticato.Email}");
                 var res = await _service.AddPreventivoNCCAsync(preventivo);
 
                 if (res.Item1)
