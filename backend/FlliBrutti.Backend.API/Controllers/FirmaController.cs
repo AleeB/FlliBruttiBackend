@@ -1,6 +1,7 @@
 using FlliBrutti.Backend.Application.IServices;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using System.Security.Claims;
 using RouteAttribute = Microsoft.AspNetCore.Mvc.RouteAttribute;
 
 namespace FlliBrutti.Backend.API.Controllers
@@ -41,7 +42,7 @@ namespace FlliBrutti.Backend.API.Controllers
         [Route("Entry")]
         public async Task<IActionResult> Entry()
         {
-            var idUser = Convert.ToInt64(User.Claims.FirstOrDefault(c => c.Type == "NomeIdentifier")?.Value);
+            var idUser = Convert.ToInt64(User.Claims.FirstOrDefault(c => c.Type == ClaimTypes.NameIdentifier)?.Value);
             try
             {
 
@@ -68,7 +69,7 @@ namespace FlliBrutti.Backend.API.Controllers
         [Route("Exit")]
         public async Task<IActionResult> Exit()
         {
-            var idUser = Convert.ToInt64(User.Claims.FirstOrDefault(c => c.Type == "NomeIdentifier")?.Value);
+            var idUser = Convert.ToInt64(User.Claims.FirstOrDefault(c => c.Type == ClaimTypes.NameIdentifier)?.Value);
             try
             {
                 _logger.LogInformation($"Exiting Firma for User with Id: {idUser}");
