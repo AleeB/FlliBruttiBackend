@@ -7,5 +7,6 @@ namespace FlliBrutti.Backend.Application.IServices
         Task<(bool, string)> CreateFirma(long idUser);
         Task<(bool, string)> ExitFirma(long idFirma);
         Task<IEnumerable<FirmaResponseDTO>> GetFirmaByIdUserAsync(long idUser);
+        Task<FirmaResponseDTO> GetLastFirma(long idUser);
     }
 }

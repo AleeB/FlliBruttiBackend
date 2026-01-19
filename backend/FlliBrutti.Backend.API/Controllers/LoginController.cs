@@ -15,17 +15,20 @@ namespace FlliBrutti.Backend.API.Controllers
         private readonly ILoginService _loginService;
         private readonly IUserService _userService;
         private readonly IJwtService _jwtService;
+        private readonly IFirmaService _firmaService;
 
         public LoginController(
             ILogger<LoginController> logger,
             ILoginService loginService,
             IUserService userService,
-            IJwtService jwtService)
+            IJwtService jwtService,
+            IFirmaService firmaService)
         {
             _logger = logger;
             _loginService = loginService;
             _userService = userService;
             _jwtService = jwtService;
+            _firmaService = firmaService;
         }
 
         [HttpPost]
@@ -79,6 +82,8 @@ namespace FlliBrutti.Backend.API.Controllers
                 _logger.LogInformation("User {Email} logged in successfully from IP {IpAddress}",
                     login.Email, ipAddress);
 
+                var firma = await _firmaService.GetLastFirma(userResponse.IdPerson);
+
                 return Ok(new
                 {
                     user = new
@@ -93,7 +98,12 @@ namespace FlliBrutti.Backend.API.Controllers
                     tokens.AccessToken,
                     tokens.RefreshToken,
                     tokens.AccessTokenExpiration,
-                    tokens.RefreshTokenExpiration
+                    tokens.RefreshTokenExpiration,
+                    lastFirma = new
+                    {
+                        entrata = firma.Entrata,
+                        uscita = firma.Uscita
+                    }
                 });
             }
             catch (Exception ex)

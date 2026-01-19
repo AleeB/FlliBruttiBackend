@@ -90,5 +90,24 @@ namespace FlliBrutti.Backend.Application.Services
                 return Enumerable.Empty<FirmaResponseDTO>();
             }
         }
+
+        public async Task<FirmaResponseDTO> GetLastFirma(long idUser)
+        {
+            try
+            {
+                var lastFirma = await _context.Firme
+                    .OrderByDescending(f => f.IdUser == idUser)
+                    .FirstOrDefaultAsync();
+                if(lastFirma == null || lastFirma == default)
+                {
+                    return null!;
+                }
+                return lastFirma.ToResponseDTO();
+            }catch(Exception ex)
+            {
+                _logger.LogError($"Error in GetLastFirma, EXCEPTION: {ex.Message},\nINNER EXCEPTION: {ex.InnerException}");
+                return null!;
+            }
+        }
     }
 }
