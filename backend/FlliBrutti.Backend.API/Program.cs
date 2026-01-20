@@ -70,6 +70,9 @@ var jwtIssuer = builder.Configuration["Jwt:Issuer"]
 var jwtAudience = builder.Configuration["Jwt:Audience"]
     ?? throw new InvalidOperationException("JWT Audience not configured in appsettings");
 
+// Cookie name constant
+const string ACCESS_TOKEN_COOKIE = "access_token";
+
 builder.Services.AddAuthentication(options =>
 {
     options.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;
@@ -94,6 +97,24 @@ builder.Services.AddAuthentication(options =>
 
     options.Events = new JwtBearerEvents
     {
+        OnMessageReceived = context =>
+        {
+            // Prima controlla se c'è un cookie
+            if (context.Request.Cookies.ContainsKey(ACCESS_TOKEN_COOKIE))
+            {
+                context.Token = context.Request.Cookies[ACCESS_TOKEN_COOKIE];
+            }
+            // Fallback: controlla l'header Authorization (utile per Swagger/testing)
+            else if (context.Request.Headers.ContainsKey("Authorization"))
+            {
+                var authHeader = context.Request.Headers["Authorization"].ToString();
+                if (authHeader.StartsWith("Bearer ", StringComparison.OrdinalIgnoreCase))
+                {
+                    context.Token = authHeader.Substring("Bearer ".Length).Trim();
+                }
+            }
+            return Task.CompletedTask;
+        },
         OnAuthenticationFailed = context =>
         {
             if (context.Exception.GetType() == typeof(SecurityTokenExpiredException))
@@ -110,7 +131,7 @@ builder.Services.AddAuthentication(options =>
             var result = System.Text.Json.JsonSerializer.Serialize(new
             {
                 error = "You are not authorized",
-                message = context.ErrorDescription
+                message = context.ErrorDescription ?? "Token is missing or invalid"
             });
             return context.Response.WriteAsync(result);
         },
@@ -128,18 +149,6 @@ builder.Services.AddAuthentication(options =>
 });
 
 builder.Services.AddAuthorization();
-
-//// CORS (opzionale ma consigliato per frontend)       CORS MUST BE DISABLED TO AVOID ATTACKS
-//builder.Services.AddCors(options =>
-//{
-//    options.AddPolicy("AllowFrontend", policy =>
-//    {
-//        policy.WithOrigins("http://localhost:3000", "http://localhost:4200") // Aggiungi l'URL del tuo frontend
-//              .AllowAnyHeader()
-//              .AllowAnyMethod()
-//              .AllowCredentials();
-//    });
-//});
 
 // Database
 builder.Services.AddDbContext<FlliBruttiContext>(opt =>
@@ -180,9 +189,9 @@ if (app.Environment.IsDevelopment())
     app.UseSwaggerUI();
 }
 
-app.UseHttpsRedirection();
-
 app.UsePathBase("/v1/");
+
+app.UseHttpsRedirection();
 
 app.UseRouting();
 

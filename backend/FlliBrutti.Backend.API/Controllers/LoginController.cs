@@ -4,6 +4,7 @@ using FlliBrutti.Backend.Application.Responses;
 using FlliBrutti.Backend.Core.Models;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using System.Text.Json;
 
 namespace FlliBrutti.Backend.API.Controllers
 {
@@ -16,19 +17,27 @@ namespace FlliBrutti.Backend.API.Controllers
         private readonly IUserService _userService;
         private readonly IJwtService _jwtService;
         private readonly IFirmaService _firmaService;
+        private readonly IConfiguration _configuration;
+
+        // Cookie names
+        private const string ACCESS_TOKEN_COOKIE = "access_token";
+        private const string REFRESH_TOKEN_COOKIE = "refresh_token";
+        private const string USER_INFO_COOKIE = "user_info";
 
         public LoginController(
             ILogger<LoginController> logger,
             ILoginService loginService,
             IUserService userService,
             IJwtService jwtService,
-            IFirmaService firmaService)
+            IFirmaService firmaService,
+            IConfiguration configuration)
         {
             _logger = logger;
             _loginService = loginService;
             _userService = userService;
             _jwtService = jwtService;
             _firmaService = firmaService;
+            _configuration = configuration;
         }
 
         [HttpPost]
@@ -65,7 +74,6 @@ namespace FlliBrutti.Backend.API.Controllers
                     IdPerson = userResponse.IdPerson,
                     Email = userResponse.Email,
                     Type = (int)userResponse.Type,
-                    // Aggiungi Person inline per evitare un'altra query
                     IdPersonNavigation = new Person
                     {
                         IdPerson = userResponse.IdPerson,
@@ -79,13 +87,18 @@ namespace FlliBrutti.Backend.API.Controllers
                 var ipAddress = HttpContext.Connection.RemoteIpAddress?.ToString() ?? "Unknown";
                 var tokens = await _jwtService.GenerateTokensAsync(userForToken, ipAddress);
 
+                // 5️⃣ Imposta i cookie
+                SetAuthCookies(tokens, userResponse);
+
                 _logger.LogInformation("User {Email} logged in successfully from IP {IpAddress}",
                     login.Email, ipAddress);
 
                 var firma = await _firmaService.GetLastFirma(userResponse.IdPerson);
 
+                // Restituisce solo conferma e info non sensibili
                 return Ok(new
                 {
+                    message = "Login successful",
                     user = new
                     {
                         userResponse.IdPerson,
@@ -95,15 +108,11 @@ namespace FlliBrutti.Backend.API.Controllers
                         userResponse.Surname,
                         userResponse.DOB
                     },
-                    tokens.AccessToken,
-                    tokens.RefreshToken,
-                    tokens.AccessTokenExpiration,
-                    tokens.RefreshTokenExpiration,
-                    lastFirma = new
+                    lastFirma = firma != null ? new
                     {
                         entrata = firma.Entrata,
                         uscita = firma.Uscita
-                    }
+                    } : null
                 });
             }
             catch (Exception ex)
@@ -115,34 +124,36 @@ namespace FlliBrutti.Backend.API.Controllers
 
         [HttpPost("refresh")]
         [AllowAnonymous]
-        public async Task<IActionResult> RefreshToken([FromBody] RefreshTokenRequest request)
+        public async Task<IActionResult> RefreshToken()
         {
             try
             {
-                if (string.IsNullOrEmpty(request?.RefreshToken))
+                // Legge il refresh token dal cookie
+                var refreshToken = Request.Cookies[REFRESH_TOKEN_COOKIE];
+
+                if (string.IsNullOrEmpty(refreshToken))
                 {
                     _logger.LogWarning("Refresh token attempt with empty token");
                     return BadRequest(new { error = "Refresh token is required" });
                 }
 
                 var ipAddress = HttpContext.Connection.RemoteIpAddress?.ToString() ?? "Unknown";
-                var tokens = await _jwtService.RefreshTokenAsync(request.RefreshToken, ipAddress);
+                var tokens = await _jwtService.RefreshTokenAsync(refreshToken, ipAddress);
 
                 if (tokens == null)
                 {
+                    // Cancella i cookie se il refresh fallisce
+                    ClearAuthCookies();
                     _logger.LogWarning("Invalid refresh token attempt from IP {IpAddress}", ipAddress);
                     return Unauthorized(new { error = "Invalid or expired refresh token" });
                 }
 
+                // Aggiorna i cookie con i nuovi token
+                SetTokenCookies(tokens);
+
                 _logger.LogInformation("Token refreshed successfully from IP {IpAddress}", ipAddress);
 
-                return Ok(new
-                {
-                    tokens.AccessToken,
-                    tokens.RefreshToken,
-                    tokens.AccessTokenExpiration,
-                    tokens.RefreshTokenExpiration
-                });
+                return Ok(new { message = "Token refreshed successfully" });
             }
             catch (Exception ex)
             {
@@ -153,18 +164,23 @@ namespace FlliBrutti.Backend.API.Controllers
 
         [Authorize]
         [HttpPost("revoke")]
-        public async Task<IActionResult> RevokeToken([FromBody] RefreshTokenRequest request)
+        public async Task<IActionResult> RevokeToken()
         {
             try
             {
-                if (string.IsNullOrEmpty(request?.RefreshToken))
+                var refreshToken = Request.Cookies[REFRESH_TOKEN_COOKIE];
+
+                if (string.IsNullOrEmpty(refreshToken))
                 {
                     _logger.LogWarning("Revoke token attempt with empty token");
                     return BadRequest(new { error = "Refresh token is required" });
                 }
 
                 var ipAddress = HttpContext.Connection.RemoteIpAddress?.ToString() ?? "Unknown";
-                var result = await _jwtService.RevokeTokenAsync(request.RefreshToken, ipAddress);
+                var result = await _jwtService.RevokeTokenAsync(refreshToken, ipAddress);
+
+                // Cancella sempre i cookie al revoke
+                ClearAuthCookies();
 
                 if (!result)
                 {
@@ -184,9 +200,127 @@ namespace FlliBrutti.Backend.API.Controllers
 
         [Authorize]
         [HttpPost("logout")]
-        public async Task<IActionResult> Logout([FromBody] RefreshTokenRequest request)
+        public async Task<IActionResult> Logout()
         {
-            return await RevokeToken(request);
+            return await RevokeToken();
         }
+
+        [Authorize]
+        [HttpGet("me")]
+        public async Task<IActionResult> GetCurrentUser()
+        {
+            try
+            {
+                var userInfoCookie = Request.Cookies[USER_INFO_COOKIE];
+                if (!string.IsNullOrEmpty(userInfoCookie))
+                {
+                    var userInfo = JsonSerializer.Deserialize<object>(Uri.UnescapeDataString(userInfoCookie));
+                    return Ok(userInfo);
+                }
+
+                return NotFound(new { error = "User info not found" });
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error getting current user");
+                return StatusCode(500, new { error = "Internal server error" });
+            }
+        }
+
+        #region Cookie Helpers
+
+        private void SetAuthCookies(JwtTokenResponse tokens, UserResponseDTO user)
+        {
+            SetTokenCookies(tokens);
+
+            // 3️⃣ Cookie user_info - NON HttpOnly (leggibile da JS)
+            var userInfo = new
+            {
+                user.IdPerson,
+                user.Email,
+                user.Type,
+                user.Name,
+                user.Surname,
+                user.DOB
+            };
+
+            var userInfoJson = JsonSerializer.Serialize(userInfo);
+
+            var isProduction = !string.Equals(
+                Environment.GetEnvironmentVariable("ASPNETCORE_ENVIRONMENT"),
+                "Development",
+                StringComparison.OrdinalIgnoreCase);
+
+            Response.Cookies.Append(USER_INFO_COOKIE, Uri.EscapeDataString(userInfoJson), new CookieOptions
+            {
+                HttpOnly = false,  // Leggibile da JavaScript
+                Secure = isProduction,
+                SameSite = SameSiteMode.Strict,
+                Expires = tokens.RefreshTokenExpiration,
+                Path = "/"
+            });
+        }
+
+        private void SetTokenCookies(JwtTokenResponse tokens)
+        {
+            var isProduction = !string.Equals(
+                Environment.GetEnvironmentVariable("ASPNETCORE_ENVIRONMENT"),
+                "Development",
+                StringComparison.OrdinalIgnoreCase);
+
+            // 1️⃣ Cookie access_token - HttpOnly
+            Response.Cookies.Append(ACCESS_TOKEN_COOKIE, tokens.AccessToken, new CookieOptions
+            {
+                HttpOnly = true,
+                Secure = isProduction,  // true in produzione, false in sviluppo per HTTP
+                SameSite = SameSiteMode.Strict,
+                Expires = tokens.AccessTokenExpiration,
+                Path = "/"
+            });
+
+            // 2️⃣ Cookie refresh_token - HttpOnly
+            Response.Cookies.Append(REFRESH_TOKEN_COOKIE, tokens.RefreshToken, new CookieOptions
+            {
+                HttpOnly = true,
+                Secure = isProduction,
+                SameSite = SameSiteMode.Strict,
+                Expires = tokens.RefreshTokenExpiration,
+                Path = "/v1/api/Login"  // Solo per gli endpoint di refresh/logout
+            });
+        }
+
+        private void ClearAuthCookies()
+        {
+            var isProduction = !string.Equals(
+                Environment.GetEnvironmentVariable("ASPNETCORE_ENVIRONMENT"),
+                "Development",
+                StringComparison.OrdinalIgnoreCase);
+
+            Response.Cookies.Delete(ACCESS_TOKEN_COOKIE, new CookieOptions
+            {
+                HttpOnly = true,
+                Secure = isProduction,
+                SameSite = SameSiteMode.Strict,
+                Path = "/"
+            });
+
+            Response.Cookies.Delete(USER_INFO_COOKIE, new CookieOptions
+            {
+                HttpOnly = false,
+                Secure = isProduction,
+                SameSite = SameSiteMode.Strict,
+                Path = "/"
+            });
+
+            Response.Cookies.Delete(REFRESH_TOKEN_COOKIE, new CookieOptions
+            {
+                HttpOnly = true,
+                Secure = isProduction,
+                SameSite = SameSiteMode.Strict,
+                Path = "/v1/api/Login"
+            });
+        }
+
+        #endregion
     }
 }
