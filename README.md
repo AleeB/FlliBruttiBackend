@@ -153,7 +153,7 @@ dotnet restore
 dotnet ef database update
 
 # Avvia l'applicazione
-dotnet run --project FlliBrutti.Backend.API --launch-profile https
+dotnet run --project API
 ```
 
 ### Configurazione
