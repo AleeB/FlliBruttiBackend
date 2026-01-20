@@ -8,7 +8,7 @@ using System.Text.Json;
 
 namespace FlliBrutti.Backend.API.Controllers
 {
-    [Route("api/[controller]")]
+    [Route("api/v1/[controller]")]
     [ApiController]
     public class LoginController : ControllerBase
     {
@@ -46,6 +46,7 @@ namespace FlliBrutti.Backend.API.Controllers
         {
             try
             {
+                ClearAuthCookies();
                 if (login == null)
                 {
                     _logger.LogWarning("Login attempt with null credentials");
@@ -285,7 +286,7 @@ namespace FlliBrutti.Backend.API.Controllers
                 Secure = isProduction,
                 SameSite = SameSiteMode.Strict,
                 Expires = tokens.RefreshTokenExpiration,
-                Path = "/v1/api/Login"  // Solo per gli endpoint di refresh/logout
+                Path = "/api/v1/Login"  // Solo per gli endpoint di refresh/logout
             });
         }
 
@@ -317,7 +318,7 @@ namespace FlliBrutti.Backend.API.Controllers
                 HttpOnly = true,
                 Secure = isProduction,
                 SameSite = SameSiteMode.Strict,
-                Path = "/v1/api/Login"
+                Path = "/api/v1/Login"
             });
         }
 

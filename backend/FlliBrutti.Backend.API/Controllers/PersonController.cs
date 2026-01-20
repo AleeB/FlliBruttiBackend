@@ -6,7 +6,7 @@ using Microsoft.AspNetCore.Mvc;
 namespace FlliBrutti.Backend.API.Controllers
 {
     [Authorize(Roles = "1")]
-    [Route("api/[controller]")]
+    [Route("api/v1/[controller]")]
     [ApiController]
     public class PersonController : ControllerBase
     {

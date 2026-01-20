@@ -189,7 +189,6 @@ if (app.Environment.IsDevelopment())
     app.UseSwaggerUI();
 }
 
-app.UsePathBase("/v1/");
 
 app.UseHttpsRedirection();
 

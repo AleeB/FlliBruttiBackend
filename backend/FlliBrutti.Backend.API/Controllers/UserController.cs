@@ -9,7 +9,7 @@ using System.Security.Claims;
 namespace FlliBrutti.Backend.API.Controllers
 {
 
-    [Route("api/[controller]")]
+    [Route("api/v1/[controller]")]
     [ApiController]
     public class UserController : ControllerBase
     {
@@ -87,7 +87,7 @@ namespace FlliBrutti.Backend.API.Controllers
             return BadRequest("UpdatePassword Failed");
         }
 
-        [Authorize]
+        [Authorize(Roles = "1")]
         [HttpPatch]
         [Route("UpdateType")]
         public async Task<IActionResult> UpdateType(EType type)
