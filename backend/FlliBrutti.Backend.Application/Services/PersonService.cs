@@ -81,7 +81,7 @@ public class PersonService : IPersonService
             {
                 Name = person.Name,
                 Surname = person.Surname,
-                DOB = person.DOB
+                PhoneNumber = person.PhoneNumber
             });
             await _context.SaveChangesAsync();
             return true;

@@ -24,6 +24,7 @@
 
         // Lista extra senza riferimenti ciclici
         public ICollection<PreventivoExtraResponseDTO> Extra { get; set; } = new List<PreventivoExtraResponseDTO>();
+        public string? NonAuthUserPhoneNumber { get; set; }
     }
 
     public class PreventivoExtraResponseDTO

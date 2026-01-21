@@ -8,7 +8,7 @@ public partial class Person
 
     public string? Surname { get; set; }
 
-    public DateOnly? DOB { get; set; }
+    public string? PhoneNumber { get; set; }
 
     public virtual User? User { get; set; }
 

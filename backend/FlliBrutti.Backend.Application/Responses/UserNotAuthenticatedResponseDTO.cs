@@ -9,7 +9,7 @@
         // Dati persona senza riferimenti ciclici
         public string? Name { get; set; }
         public string? Surname { get; set; }
-        public DateOnly? DOB { get; set; }
+        public string? PhoneNumber { get; set; }
 
         // Statistiche
         public int TotalPreventiviCount { get; set; }

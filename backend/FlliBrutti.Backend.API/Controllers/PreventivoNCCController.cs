@@ -21,7 +21,7 @@ namespace FlliBrutti.Backend.API.Controllers
         [Authorize(Roles = "1")]
         [HttpGet]
         [Route("ToExamine")]
-        public async Task<IActionResult> GetPreventiviToExamine([FromBody] bool isTodo)
+        public async Task<IActionResult> GetPreventiviToExamine(bool isTodo)
         {
             try
             {

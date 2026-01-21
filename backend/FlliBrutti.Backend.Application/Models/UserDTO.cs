@@ -26,7 +26,7 @@ public class UserDTO : PersonDTO
 
             Name = Name,
             Surname = Surname,
-            DOB = DOB
+            PhoneNumber = PhoneNumber
         };
     }
 }

@@ -67,8 +67,12 @@ public class FlliBruttiContext : DbContext, IFlliBruttiContext
 
             entity.ToTable("people");
 
+            entity.HasIndex(e => e.PhoneNumber).IsUnique();
+
             entity.Property(e => e.IdPerson).HasColumnName("idPerson");
-            entity.Property(e => e.DOB).HasColumnName("dob");
+            entity.Property(e => e.PhoneNumber)
+            .HasMaxLength(20)
+            .HasColumnName("phoneNumber");
             entity.Property(e => e.Name)
                 .HasMaxLength(50)
                 .HasColumnName("name");

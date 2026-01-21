@@ -76,7 +76,6 @@ public class UserService : IUserService
             throw new ArgumentNullException(nameof(email), "email is null");
         }
 
-        // 🔥 IMPORTANTE: AsNoTracking per query read-only
         var user = await _context.Users
             .AsNoTracking()
             .Where(u => u.Email == email)
@@ -85,7 +84,7 @@ public class UserService : IUserService
                 Email = u.Email,
                 IdPerson = u.IdPerson,
                 Type = (EType)u.Type,
-                DOB = u.IdPersonNavigation.DOB,
+                PhoneNumber = u.IdPersonNavigation.PhoneNumber,
                 Name = u.IdPersonNavigation.Name,
                 Surname = u.IdPersonNavigation.Surname
             })
@@ -129,7 +128,7 @@ public class UserService : IUserService
             Type = (EType)user.Type,
             Name = user.IdPersonNavigation.Name,
             Surname = user.IdPersonNavigation.Surname,
-            DOB = user.IdPersonNavigation.DOB
+            PhoneNumber = user.IdPersonNavigation.PhoneNumber
         };
     }
 
@@ -156,7 +155,7 @@ public class UserService : IUserService
             Type = (EType)userToUpdate.Type,
             Name = userToUpdate.IdPersonNavigation.Name,
             Surname = userToUpdate.IdPersonNavigation.Surname,
-            DOB = userToUpdate.IdPersonNavigation.DOB
+            PhoneNumber = userToUpdate.IdPersonNavigation.PhoneNumber
         };
     }
 }

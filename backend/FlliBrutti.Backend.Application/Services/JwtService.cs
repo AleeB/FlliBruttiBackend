@@ -125,7 +125,7 @@ namespace FlliBrutti.Backend.Application.Services
                             {
                                 rt.User.IdPersonNavigation.Name,
                                 rt.User.IdPersonNavigation.Surname,
-                                rt.User.IdPersonNavigation.DOB
+                                rt.User.IdPersonNavigation.PhoneNumber
                             }
                         }
                     })
@@ -154,7 +154,7 @@ namespace FlliBrutti.Backend.Application.Services
                         IdPerson = storedToken.User.IdPerson,
                         Name = storedToken.User.Person.Name,
                         Surname = storedToken.User.Person.Surname,
-                        DOB = storedToken.User.Person.DOB
+                        PhoneNumber = storedToken.User.Person.PhoneNumber
                     }
                 };
 

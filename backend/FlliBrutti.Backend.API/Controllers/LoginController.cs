@@ -80,7 +80,7 @@ namespace FlliBrutti.Backend.API.Controllers
                         IdPerson = userResponse.IdPerson,
                         Name = userResponse.Name,
                         Surname = userResponse.Surname,
-                        DOB = userResponse.DOB
+                        PhoneNumber = userResponse.PhoneNumber
                     }
                 };
 
@@ -107,7 +107,7 @@ namespace FlliBrutti.Backend.API.Controllers
                         userResponse.Type,
                         userResponse.Name,
                         userResponse.Surname,
-                        userResponse.DOB
+                        userResponse.PhoneNumber
                     },
                     lastFirma = firma != null ? new
                     {
@@ -242,7 +242,7 @@ namespace FlliBrutti.Backend.API.Controllers
                 user.Type,
                 user.Name,
                 user.Surname,
-                user.DOB
+                user.PhoneNumber
             };
 
             var userInfoJson = JsonSerializer.Serialize(userInfo);

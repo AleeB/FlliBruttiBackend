@@ -17,6 +17,7 @@ public class UserNonAutenticatoDTO : PersonDTO
             {
                 Name = this.Name,
                 Surname = this.Surname,
+                PhoneNumber = this.PhoneNumber
             }
         };
     }

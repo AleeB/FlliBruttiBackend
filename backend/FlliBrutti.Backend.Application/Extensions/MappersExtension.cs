@@ -27,7 +27,7 @@ namespace FlliBrutti.Backend.Application.Extensions
                 IdPerson = person.IdPerson,
                 Name = person.Name,
                 Surname = person.Surname,
-                DOB = person.DOB,
+                PhoneNumber = person.PhoneNumber,
                 HasUserAccount = person.User != null,
                 HasNonAuthenticatedAccount = person.UserNotAuthenticated != null
             };
@@ -42,7 +42,7 @@ namespace FlliBrutti.Backend.Application.Extensions
                 Type = (EType)user.Type,
                 Name = user.IdPersonNavigation?.Name,
                 Surname = user.IdPersonNavigation?.Surname,
-                DOB = user.IdPersonNavigation?.DOB,
+                PhoneNumber = user.IdPersonNavigation?.PhoneNumber,
                 TotalFirmeCount = user.Firme?.Count ?? 0,
                 TotalPreventiviCount = user.PreventiviNcc?.Count ?? 0
             };
@@ -57,7 +57,7 @@ namespace FlliBrutti.Backend.Application.Extensions
                 Ip = user.Ip,
                 Name = user.IdPersonNavigation?.Name,
                 Surname = user.IdPersonNavigation?.Surname,
-                DOB = user.IdPersonNavigation?.DOB,
+                PhoneNumber = user.IdPersonNavigation?.PhoneNumber,
                 TotalPreventiviCount = user.PreventiviNcc?.Count ?? 0
             };
         }
@@ -81,6 +81,7 @@ namespace FlliBrutti.Backend.Application.Extensions
                 NonAuthUserName = preventivo.IdUserNonAutenticatoNavigation?.IdPersonNavigation?.Name,
                 NonAuthUserSurname = preventivo.IdUserNonAutenticatoNavigation?.IdPersonNavigation?.Surname,
                 NonAuthUserIp = preventivo.IdUserNonAutenticatoNavigation?.Ip,
+                NonAuthUserPhoneNumber = preventivo.IdUserNonAutenticatoNavigation!.IdPersonNavigation.PhoneNumber,
                 Extra = preventivo.PreventivoExtra?.Select(e => e.ToResponseDTO()).ToList() ?? new List<PreventivoExtraResponseDTO>()
             };
         }
