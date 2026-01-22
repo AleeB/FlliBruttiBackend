@@ -25,6 +25,13 @@ public class PreventivoNCCService : IPreventivoNCCService
         try
         {
             _logger.LogInformation($"Adding new preventivo of user.Email: {preventivo.UserNonAutenticato.Email}");
+            var user = await _context.UsersNotAuthenticated.FirstOrDefaultAsync(u => u.Email == preventivo.UserNonAutenticato.Email);
+
+            if (user == null || user == default)
+            {
+                _logger.LogInformation($"UserNonAutenticato with Email: {preventivo.UserNonAutenticato.Email} not found. Creating new user.");
+                user = preventivo.UserNonAutenticato.ToModel();
+            }
 
             var newPreventivo = new PreventivoNCC
             {
@@ -32,7 +39,7 @@ public class PreventivoNCCService : IPreventivoNCCService
                 IsTodo = true,
                 Partenza = preventivo.Partenza,
                 Arrivo = preventivo.Arrivo,
-                IdUserNonAutenticatoNavigation = preventivo.UserNonAutenticato.ToModel()
+                IdUserNonAutenticatoNavigation = user
             };
 
             await _context.PreventiviNCC.AddAsync(newPreventivo);
