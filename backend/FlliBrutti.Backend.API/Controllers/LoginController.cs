@@ -228,6 +228,13 @@ namespace FlliBrutti.Backend.API.Controllers
             }
         }
 
+        [AllowAnonymous]
+        [HttpGet("HealthCheck")]
+        public IActionResult HealthCheck()
+        {
+            return Ok(new { status = "API is healthy" });
+        }
+
         #region Cookie Helpers
 
         private void SetAuthCookies(JwtTokenResponse tokens, UserResponseDTO user)
