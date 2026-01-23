@@ -1,6 +1,6 @@
--- MySQL dump 10.13  Distrib 8.4.7, for Win64 (x86_64)
+-- MySQL dump 10.13  Distrib 8.4.7, for macos15 (arm64)
 --
--- Host: localhost    Database: fllibrutti
+-- Host: 127.0.0.1    Database: flliBrutti
 -- ------------------------------------------------------
 -- Server version	8.4.7
 
@@ -77,9 +77,9 @@ CREATE TABLE `people` (
   `idPerson` bigint NOT NULL AUTO_INCREMENT,
   `name` varchar(50) DEFAULT NULL,
   `surname` varchar(50) DEFAULT NULL,
-  `dob` date DEFAULT NULL,
-  PRIMARY KEY (`idPerson`)
-) ENGINE=InnoDB AUTO_INCREMENT=7 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+  `phoneNumber` varchar(20) DEFAULT NULL,
+  PRIMARY KEY (`idPerson`),
+) ENGINE=InnoDB AUTO_INCREMENT=8 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -88,7 +88,7 @@ CREATE TABLE `people` (
 
 LOCK TABLES `people` WRITE;
 /*!40000 ALTER TABLE `people` DISABLE KEYS */;
-INSERT INTO `people` VALUES (1,'Gianni','Brutti','1970-01-07'),(2,'Alessio','Brutti','2002-05-25'),(6,'1','1','2026-01-14');
+INSERT INTO `people` VALUES (1,'Gianni','Brutti','1970-01-07'),(2,'Alessio','Brutti','2002-05-25'),(6,'1','1','2026-01-14'),(7,'2','2','2026-01-16');
 /*!40000 ALTER TABLE `people` ENABLE KEYS */;
 UNLOCK TABLES;
 
@@ -174,7 +174,7 @@ CREATE TABLE `refreshtokens` (
   UNIQUE KEY `token_idx` (`token`),
   KEY `userId_idx` (`userId`),
   CONSTRAINT `userId` FOREIGN KEY (`userId`) REFERENCES `users` (`idPerson`) ON DELETE CASCADE ON UPDATE CASCADE
-) ENGINE=InnoDB AUTO_INCREMENT=181 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+) ENGINE=InnoDB AUTO_INCREMENT=183 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -183,7 +183,7 @@ CREATE TABLE `refreshtokens` (
 
 LOCK TABLES `refreshtokens` WRITE;
 /*!40000 ALTER TABLE `refreshtokens` DISABLE KEYS */;
-INSERT INTO `refreshtokens` VALUES (180,'dZXEyyMr/oMn/KxyyLXqwdFOvOQT1FTV5/tqQBf1NijJHWHFp/wozdrj+5087oh5nlzQihQT357BG+lfxJ6CIQ==',6,'2026-01-30 11:10:16','2026-01-15 11:10:16',0,NULL,NULL);
+INSERT INTO `refreshtokens` VALUES (182,'nt3dKK6L/BgonBo6RKJHnjySGeeMLxA+Z/LZiOvfEKUnZExTd1X6KpeaYBO+ARJ+n3DI6L7uBicJK1dvUQTqEA==',6,'2026-01-31 21:33:02','2026-01-16 21:33:02',0,NULL,NULL);
 /*!40000 ALTER TABLE `refreshtokens` ENABLE KEYS */;
 UNLOCK TABLES;
 
@@ -211,7 +211,7 @@ CREATE TABLE `users` (
 
 LOCK TABLES `users` WRITE;
 /*!40000 ALTER TABLE `users` DISABLE KEYS */;
-INSERT INTO `users` VALUES (6,2,'1','t+qNrHXRRwU4gal24RMRWMxEYr6hf7m7d6+uKLpYyKMZiMaZub2/a38vZKJum0w6'),(2,1,'alessiobrutti@outlook.com','/JMYDQ8PAvl2dJe3ZH8SyFD60OUq84fkdU5ELqqh81aDa+0F174lRi4S8jlEnHVl'),(1,1,'giannibrutti@virgilio.it','CZz+DSChHp6aKllf7ioeifmIIggRpwyt+PVDRWjPpuCOrT5S/MP3Wn5Jhh0Q6wII');
+INSERT INTO `users` VALUES (6,1,'1','Y0N9xNCMilgY8PTcfPqRfEKKhQT1DEMLfbDAYBoa65y+js9ZM0rnFdh//Bj58hGU'),(7,2,'2','56zAm2vU+gDMV6v9X1mlGlG5clo6DkB1ku7XWR0YOzuLORSdK9RIq72BRFiEiVRi'),(2,1,'alessiobrutti@outlook.com','/JMYDQ8PAvl2dJe3ZH8SyFD60OUq84fkdU5ELqqh81aDa+0F174lRi4S8jlEnHVl'),(1,1,'giannibrutti@virgilio.it','CZz+DSChHp6aKllf7ioeifmIIggRpwyt+PVDRWjPpuCOrT5S/MP3Wn5Jhh0Q6wII');
 /*!40000 ALTER TABLE `users` ENABLE KEYS */;
 UNLOCK TABLES;
 
@@ -251,4 +251,4 @@ UNLOCK TABLES;
 /*!40101 SET COLLATION_CONNECTION=@OLD_COLLATION_CONNECTION */;
 /*!40111 SET SQL_NOTES=@OLD_SQL_NOTES */;
 
--- Dump completed on 2026-01-15 13:58:15
+-- Dump completed on 2026-01-22 13:45:25
