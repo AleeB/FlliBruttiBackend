@@ -1,0 +1,64 @@
+# === .dockerignore ===
+# Esclude file non necessari dal contesto di build Docker
+
+# Build outputs
+**/bin/
+**/obj/
+**/out/
+
+# IDE e editor
+.vs/
+.vscode/
+*.user
+*.suo
+*.userosscache
+*.sln.docstates
+.idea/
+
+# Test results
+**/TestResults/
+**/*.trx
+
+# Logs
+**/Logs/
+*.log
+
+# Git
+.git/
+.gitignore
+.gitattributes
+
+# Docker files (non servono nel container)
+**/Dockerfile*
+**/.dockerignore
+**/docker-compose*.yml
+
+# Documentazione
+**/*.md
+LICENSE
+docs/
+
+# File di sviluppo
+**/*.Development.json
+**/launchSettings.json
+
+# NuGet
+**/packages/
+**/*.nupkg
+
+# Secrets e configurazioni locali
+**/*.local.json
+**/secrets.json
+**/.env
+**/.env.*
+
+# File temporanei
+**/temp/
+**/tmp/
+**/*.tmp
+**/*.bak
+**/*.swp
+
+# OS files
+.DS_Store
+Thumbs.db
