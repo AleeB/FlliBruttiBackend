@@ -10,7 +10,7 @@ services:
   api:
     build:
       context: .
-      dockerfile: .dockerfile
+      dockerfile: Dockerfile
       target: runtime
     container_name: fllibrutti-api
     ports:
@@ -19,7 +19,7 @@ services:
       - ASPNETCORE_ENVIRONMENT=Production
       - ASPNETCORE_URLS=http://+:5000
       # Connection string per MySQL nel container
-      - ConnectionStrings__FlliBruttiDatabase=Server=db;Port=3306;Database=FlliBrutti;User=fllibrutti;Password=${DB_PASSWORD:-SecurePassword123!};
+      - ConnectionStrings__FlliBruttiDatabase=${DATABASE_URL}
       # JWT Configuration
       - Jwt__SecretKey=${JWT_SECRET_KEY:-SuperSecretKeyForJWTAuthenticationMinimum32CharactersLong!}
       - Jwt__Issuer=FlliBrutti.Backend.API
@@ -32,10 +32,11 @@ services:
       db:
         condition: service_healthy
     networks:
-      - fllibrutti-network
+      - fllibrutti-network  # Rete con il database
+      - app-net  # Rete condivisa con il frontend
     restart: unless-stopped
     healthcheck:
-      test: ["CMD", "curl", "-f", "http://localhost:5000/api/v1/Login/me"]
+      test: ["CMD", "curl", "-f", "http://localhost:5000/api/v1/Login/HealthCheck"]
       interval: 30s
       timeout: 10s
       retries: 3
@@ -49,11 +50,11 @@ services:
     container_name: fllibrutti-db
     environment:
       MYSQL_ROOT_PASSWORD: ${DB_ROOT_PASSWORD:-root2002}
-      MYSQL_DATABASE: FlliBrutti
-      MYSQL_USER: fllibrutti
+      MYSQL_DATABASE: ${DB_NAME:-FlliBrutti}
+      MYSQL_USER: ${DB_USER:-fllibrutti}
       MYSQL_PASSWORD: ${DB_PASSWORD:-SecurePassword123!}
     ports:
-      - "3306:3306"
+      - "6000:3306"
     volumes:
       - mysql-data:/var/lib/mysql
       - ./init-db:/docker-entrypoint-initdb.d  # Script SQL di inizializzazione
@@ -100,3 +101,5 @@ volumes:
 networks:
   fllibrutti-network:
     driver: bridge
+  app-net:
+    external: true
