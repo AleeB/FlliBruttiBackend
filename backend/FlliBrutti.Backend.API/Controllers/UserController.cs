@@ -22,7 +22,7 @@ namespace FlliBrutti.Backend.API.Controllers
             _userService = userService;
         }
 
-        //[Authorize(Roles = "1")]        //Admin
+        [Authorize(Roles = "1")]        //Admin
         [HttpPost]
         public async Task<IActionResult> Add([FromBody] UserDTO user)
         {

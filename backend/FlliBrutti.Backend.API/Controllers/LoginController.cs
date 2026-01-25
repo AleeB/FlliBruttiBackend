@@ -53,7 +53,7 @@ namespace FlliBrutti.Backend.API.Controllers
                     return BadRequest(new { error = "Invalid login data" });
                 }
 
-                // 1️⃣ Valida le credenziali
+                // Valida le credenziali
                 var isValid = await _loginService.LoginAsync(login);
                 if (!isValid)
                 {
@@ -61,7 +61,7 @@ namespace FlliBrutti.Backend.API.Controllers
                     return Unauthorized(new { error = "Email or Password does not match or does not exist" });
                 }
 
-                // 2️⃣ Ottieni i dati utente (UNA SOLA VOLTA con AsNoTracking)
+                // Ottieni i dati utente (UNA SOLA VOLTA con AsNoTracking)
                 var userResponse = await _userService.GetUserByEmailAsync(login.Email);
                 if (userResponse == null)
                 {
@@ -69,7 +69,7 @@ namespace FlliBrutti.Backend.API.Controllers
                     return StatusCode(500, new { error = "Internal server error" });
                 }
 
-                // 3️⃣ Crea un oggetto User minimale per il JWT (SENZA caricare dal DB)
+                // Crea un oggetto User minimale per il JWT (SENZA caricare dal DB)
                 var userForToken = new User
                 {
                     IdPerson = userResponse.IdPerson,
@@ -241,7 +241,7 @@ namespace FlliBrutti.Backend.API.Controllers
         {
             SetTokenCookies(tokens);
 
-            // 3️⃣ Cookie user_info - NON HttpOnly (leggibile da JS)
+            // Cookie user_info - NON HttpOnly (leggibile da JS)
             var userInfo = new
             {
                 user.IdPerson,
@@ -276,7 +276,7 @@ namespace FlliBrutti.Backend.API.Controllers
                 "Development",
                 StringComparison.OrdinalIgnoreCase);
 
-            // 1️⃣ Cookie access_token - HttpOnly
+            // Cookie access_token - HttpOnly
             Response.Cookies.Append(ACCESS_TOKEN_COOKIE, tokens.AccessToken, new CookieOptions
             {
                 HttpOnly = true,
@@ -286,7 +286,7 @@ namespace FlliBrutti.Backend.API.Controllers
                 Path = "/"
             });
 
-            // 2️⃣ Cookie refresh_token - HttpOnly
+            // Cookie refresh_token - HttpOnly
             Response.Cookies.Append(REFRESH_TOKEN_COOKIE, tokens.RefreshToken, new CookieOptions
             {
                 HttpOnly = true,

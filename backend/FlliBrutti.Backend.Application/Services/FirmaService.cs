@@ -95,8 +95,11 @@ namespace FlliBrutti.Backend.Application.Services
         {
             try
             {
+                //var temp = await _context.Firme.Where(u => u.IdUser == idUser).ToListAsync();
                 var lastFirma = await _context.Firme
-                    .OrderByDescending(f => f.IdUser == idUser)
+                    .AsNoTracking()
+                    .Where(f => f.IdUser == idUser)
+                    .OrderByDescending(f => f.Entrata)
                     .FirstOrDefaultAsync();
                 if(lastFirma == null || lastFirma == default)
                 {
