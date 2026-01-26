@@ -8,17 +8,17 @@ on:
   push:
     branches: [main, master]
     paths:
-      - 'backend/**/*.cs'
-      - 'backend/**/*.csproj'
-      - 'backend/Dockerfile'
-      - '.github/workflows/cd.yml'
+      - "backend/**/*.cs"
+      - "backend/**/*.csproj"
+      - "backend/Dockerfile"
+      - ".github/workflows/cd.yml"
   # Permette deploy manuale
   workflow_dispatch:
     inputs:
       environment:
-        description: 'Environment to deploy'
+        description: "Environment to deploy"
         required: true
-        default: 'staging'
+        default: "staging"
         type: choice
         options:
           - staging
@@ -27,7 +27,7 @@ on:
 env:
   REGISTRY: ghcr.io
   IMAGE_NAME: ${{ github.repository_owner }}/fllibrutti-backend
-  DOTNET_VERSION: '8.0.x'
+  DOTNET_VERSION: "8.0.x"
 
 jobs:
   # ============================================
@@ -36,7 +36,7 @@ jobs:
   build-and-push:
     name: 🐳 Build & Push Docker Image
     runs-on: ubuntu-latest
-    
+
     outputs:
       image-tag: ${{ steps.meta.outputs.tags }}
       image-digest: ${{ steps.build-push.outputs.digest }}
@@ -115,7 +115,7 @@ jobs:
     runs-on: ubuntu-latest
     needs: build-and-push
     if: github.ref == format('refs/heads/{0}', github.event.repository.default_branch)
-    
+
     environment:
       name: staging
       url: ${{ vars.STAGING_URL }}
@@ -124,7 +124,6 @@ jobs:
       - name: 📥 Checkout repository
         uses: actions/checkout@v4
 
-      # Deploy via SSH
       - name: 🚀 Deploy to staging server
         uses: appleboy/ssh-action@v1.0.3
         if: ${{ vars.STAGING_HOST != '' }}
@@ -132,35 +131,19 @@ jobs:
           host: ${{ vars.STAGING_HOST }}
           username: ${{ secrets.STAGING_USER }}
           key: ${{ secrets.STAGING_SSH_KEY }}
+          envs: GHCR_PAT,REGISTRY,IMAGE_NAME
           script: |
-            # Login al registry
-            echo ${{ secrets.GITHUB_TOKEN }} | docker login ghcr.io -u ${{ github.actor }} --password-stdin
-            
+            # Login al registry con PAT
+            echo $GHCR_PAT | docker login ghcr.io -u ${{ github.actor }} --password-stdin
+
             # Pull nuova immagine
-            docker pull ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:latest
-            
-            # Stop e rimuovi container esistente
-            docker stop fllibrutti-api || true
-            docker rm fllibrutti-api || true
-            docker network create app-net || true
-            
-            # Avvia nuovo container
-            docker run -d \
-              --name fllibrutti-api \
-              --restart unless-stopped \
-              -p 5000:5000 \
-              --network fllibrutti-network \
-              --network app-net \
-              -e ASPNETCORE_ENVIRONMENT=Staging \
-              -e "ConnectionStrings__FlliBruttiDatabase=${{ secrets.STAGING_DB_CONNECTION }}" \
-              -e "Jwt__SecretKey=${{ secrets.JWT_SECRET_KEY }}" \
-              -e "Security__Secret=${{ secrets.SECURITY_SECRET }}" \
-              ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:latest
-            
-            # Cleanup immagini vecchie
-            docker image prune -f
-            
-            echo "✅ Deployment completed!"
+            docker pull $REGISTRY/$IMAGE_NAME:latest
+
+            # ... resto dello script
+        env:
+          GHCR_PAT: ${{ secrets.GHCR_PAT }}
+          REGISTRY: ${{ env.REGISTRY }}
+          IMAGE_NAME: ${{ env.IMAGE_NAME }}
 
       # Health check (se configurato)
       - name: ❤️ Health Check
@@ -168,10 +151,10 @@ jobs:
         run: |
           echo "Waiting for service to start..."
           sleep 30
-          
+
           HEALTH_URL="${{ vars.STAGING_URL }}/api/v1/Login/HealthCheck"
           echo "Checking: $HEALTH_URL"
-          
+
           for i in {1..5}; do
             if curl -sf "$HEALTH_URL"; then
               echo "✅ Health check passed!"
@@ -180,7 +163,7 @@ jobs:
             echo "Attempt $i failed, retrying in 10s..."
             sleep 10
           done
-          
+
           echo "❌ Health check failed after 5 attempts"
           exit 1
 
@@ -201,7 +184,7 @@ jobs:
     runs-on: ubuntu-latest
     needs: [build-and-push, deploy-staging]
     if: github.event_name == 'workflow_dispatch' && github.event.inputs.environment == 'production'
-    
+
     environment:
       name: production
       url: ${{ vars.PRODUCTION_URL }}
@@ -219,15 +202,15 @@ jobs:
           key: ${{ secrets.PRODUCTION_SSH_KEY }}
           script: |
             echo ${{ secrets.GITHUB_TOKEN }} | docker login ghcr.io -u ${{ github.actor }} --password-stdin
-            
+
             # Pull immagine specifica (non latest per production)
             docker pull ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:${{ needs.build-and-push.outputs.short-sha }}
-            
+
             # Blue-Green deployment
             docker stop fllibrutti-api-old || true
             docker rm fllibrutti-api-old || true
             docker rename fllibrutti-api fllibrutti-api-old || true
-            
+
             docker run -d \
               --name fllibrutti-api \
               --restart unless-stopped \
@@ -238,7 +221,7 @@ jobs:
               -e "Jwt__SecretKey=${{ secrets.JWT_SECRET_KEY }}" \
               -e "Security__Secret=${{ secrets.SECURITY_SECRET }}" \
               ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:${{ needs.build-and-push.outputs.short-sha }}
-            
+
             # Verifica e cleanup
             sleep 30
             if docker ps | grep -q fllibrutti-api; then
@@ -252,7 +235,7 @@ jobs:
               docker start fllibrutti-api
               exit 1
             fi
-            
+
             docker image prune -f
 
       - name: ❤️ Production Health Check
