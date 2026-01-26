@@ -11,7 +11,9 @@ LABEL description="FlliBrutti MySQL Database"
 COPY init-db/db-dump.sql /docker-entrypoint-initdb.d/01-schema.sql
 
 ENV MYSQL_DATABASE=FlliBrutti \
-    MYSQL_USER=fllibrutti
+    MYSQL_USER=fllibrutti \
+    MYSQL_ROOT_PASSWORD=7zOhUgBtgNIqxSFZevvP5VH1GN75FrxgwFIdfpd2NJlYOM2dFBiIwBzFMQBtBCeD
+
 
 HEALTHCHECK --interval=10s --timeout=5s --start-period=30s --retries=5 \
     CMD mysqladmin ping -h localhost -u root -p${MYSQL_ROOT_PASSWORD} || exit 1
