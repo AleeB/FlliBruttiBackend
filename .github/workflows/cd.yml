@@ -8,9 +8,9 @@ on:
   push:
     branches: [main, master]
     paths:
-      - '**/*.cs'
-      - '**/*.csproj'
-      - '**/Dockerfile'
+      - 'backend/**/*.cs'
+      - 'backend/**/*.csproj'
+      - 'backend/Dockerfile'
       - '.github/workflows/cd.yml'
   # Permette deploy manuale
   workflow_dispatch:
