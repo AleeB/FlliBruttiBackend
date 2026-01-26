@@ -8,9 +8,9 @@ on:
   push:
     branches: [main, develop, master]
     paths:
-      - '**/*.cs'
-      - '**/*.csproj'
-      - '**/Dockerfile'
+      - 'backend/**/*.cs'
+      - 'backend/**/*.csproj'
+      - 'backend/Dockerfile'
       - '.github/workflows/ci.yml'
   pull_request:
     branches: [main, develop, master]
@@ -42,7 +42,7 @@ jobs:
         uses: actions/cache@v4
         with:
           path: ~/.nuget/packages
-          key: ${{ runner.os }}-nuget-${{ hashFiles('**/*.csproj') }}
+          key: ${{ runner.os }}-nuget-${{ hashFiles('backend/**/*.csproj') }}
           restore-keys: |
             ${{ runner.os }}-nuget-
 
@@ -91,7 +91,7 @@ jobs:
 
       - name: 🔍 Check for vulnerable packages
         run: |
-          dotnet restore backend.sln
+          dotnet restore backend/backend.sln
           dotnet list package --vulnerable --include-transitive 2>&1 | tee vulnerability-report.txt
           if grep -q "has the following vulnerable packages" vulnerability-report.txt; then
             echo "::warning::⚠️ Vulnerable packages detected! Check the report."
@@ -123,7 +123,7 @@ jobs:
         uses: docker/build-push-action@v5
         with:
           context: .
-          file: ./Dockerfile
+          file: backend/Dockerfile
           push: false
           tags: fllibrutti-backend:test
           cache-from: type=gha
