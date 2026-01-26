@@ -1,0 +1,19 @@
+# ============================================
+# DOCKERFILE - FlliBrutti Database MySQL
+# ============================================
+
+FROM mysql:8.0
+
+LABEL maintainer="aleeb"
+LABEL description="FlliBrutti MySQL Database"
+
+# Copia il dump SQL
+COPY init-db/db-dump.sql /docker-entrypoint-initdb.d/01-schema.sql
+
+ENV MYSQL_DATABASE=FlliBrutti \
+    MYSQL_USER=fllibrutti
+
+HEALTHCHECK --interval=10s --timeout=5s --start-period=30s --retries=5 \
+    CMD mysqladmin ping -h localhost -u root -p${MYSQL_ROOT_PASSWORD} || exit 1
+
+EXPOSE 3306

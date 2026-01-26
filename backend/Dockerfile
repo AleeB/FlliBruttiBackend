@@ -57,6 +57,6 @@ EXPOSE 5000
 
 # Healthcheck
 HEALTHCHECK --interval=30s --timeout=10s --start-period=15s --retries=3 \
-    CMD curl -f http://localhost:5000/api/v1/Login || exit 1
+    CMD curl -f http://localhost:5000/api/v1/Login/HealthCheck || exit 1
 
 ENTRYPOINT ["dotnet", "FlliBrutti.Backend.API.dll"]

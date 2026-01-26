@@ -1,6 +1,5 @@
 # ============================================
 # CI - Continuous Integration
-# Esegue build e test ad ogni push/PR
 # ============================================
 name: CI - Build & Test
 
@@ -8,9 +7,7 @@ on:
   push:
     branches: [main, develop, master]
     paths:
-      - 'backend/**/*.cs'
-      - 'backend/**/*.csproj'
-      - 'backend/Dockerfile'
+      - 'backend/**'
       - '.github/workflows/ci.yml'
   pull_request:
     branches: [main, develop, master]
@@ -19,25 +16,19 @@ env:
   DOTNET_VERSION: '8.0.x'
 
 jobs:
-  # ============================================
-  # JOB 1: Build e Test
-  # ============================================
   build-and-test:
     name: 🔨 Build & Test
     runs-on: ubuntu-latest
 
     steps:
-      # 1. Checkout del codice
       - name: 📥 Checkout repository
         uses: actions/checkout@v4
 
-      # 2. Setup .NET SDK
       - name: 🔧 Setup .NET ${{ env.DOTNET_VERSION }}
         uses: actions/setup-dotnet@v4
         with:
           dotnet-version: ${{ env.DOTNET_VERSION }}
 
-      # 3. Cache NuGet packages
       - name: 📦 Cache NuGet packages
         uses: actions/cache@v4
         with:
@@ -46,35 +37,16 @@ jobs:
           restore-keys: |
             ${{ runner.os }}-nuget-
 
-      # 4. Restore dependencies
       - name: 📚 Restore dependencies
         run: dotnet restore backend/backend.sln
 
-      # 5. Build
       - name: 🔨 Build solution
         run: dotnet build backend/backend.sln --configuration Release --no-restore
-      # 6. Run tests
-      # - name: 🧪 Run tests
-      #   run: |
-      #     dotnet test backend.sln \
-      #       --configuration Release \
-      #       --no-build \
-      #       --verbosity normal \
-      #       --collect:"XPlat Code Coverage" \
-      #       --results-directory ./TestResults
 
-      # # 7. Upload test results
-      # - name: 📊 Upload test results
-      #   uses: actions/upload-artifact@v4
-      #   if: always()
-      #   with:
-      #     name: test-results-${{ github.run_number }}
-      #     path: ./TestResults/
-      #     retention-days: 7
+      - name: 🧪 Run tests
+        run: dotnet test backend/backend.sln --configuration Release --no-build --verbosity normal
+        continue-on-error: true
 
-  # ============================================
-  # JOB 2: Security Scan
-  # ============================================
   security-scan:
     name: 🔒 Security Scan
     runs-on: ubuntu-latest
@@ -92,39 +64,35 @@ jobs:
       - name: 🔍 Check for vulnerable packages
         run: |
           dotnet restore backend/backend.sln
-          dotnet list package --vulnerable --include-transitive 2>&1 | tee vulnerability-report.txt
+          dotnet list backend/backend.sln package --vulnerable --include-transitive 2>&1 | tee vulnerability-report.txt
           if grep -q "has the following vulnerable packages" vulnerability-report.txt; then
-            echo "::warning::⚠️ Vulnerable packages detected! Check the report."
+            echo "::warning::⚠️ Vulnerable packages detected!"
           fi
 
-      - name: 📄 Upload vulnerability report
-        uses: actions/upload-artifact@v4
+  docker-build-test:
+    name: 🐳 Docker Build Test
+    runs-on: ubuntu-latest
+    needs: build-and-test
+
+    steps:
+      - name: 📥 Checkout repository
+        uses: actions/checkout@v4
+
+      - name: 🐳 Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: 🔨 Build Backend image (test)
+        uses: docker/build-push-action@v5
         with:
-          name: vulnerability-report
-          path: vulnerability-report.txt
-          retention-days: 30
+          context: ./backend
+          file: ./backend/Dockerfile
+          push: false
+          tags: fllibrutti-backend:test
 
-  # ============================================
-  # JOB 3: Docker Build Test
-  # ============================================
-  # docker-build-test:
-  #   name: 🐳 Docker Build Test
-  #   runs-on: ubuntu-latest
-  #   needs: build-and-test
-
-  #   steps:
-  #     - name: 📥 Checkout repository
-  #       uses: actions/checkout@v4
-
-  #     - name: 🐳 Set up Docker Buildx
-  #       uses: docker/setup-buildx-action@v3
-
-  #     - name: 🔨 Build Docker image (test only)
-  #       uses: docker/build-push-action@v5
-  #       with:
-  #         context: .
-  #         file: backend/Dockerfile
-  #         push: false
-  #         tags: fllibrutti-backend:test
-  #         cache-from: type=gha
-  #         cache-to: type=gha,mode=max
+      - name: 🔨 Build Database image (test)
+        uses: docker/build-push-action@v5
+        with:
+          context: ./backend
+          file: ./backend/Dockerfile.db
+          push: false
+          tags: fllibrutti-db:test
