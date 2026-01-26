@@ -48,12 +48,11 @@ jobs:
 
       # 4. Restore dependencies
       - name: 📚 Restore dependencies
-        run: dotnet restore backend.sln
+        run: dotnet restore backend/backend.sln
 
       # 5. Build
       - name: 🔨 Build solution
-        run: dotnet build backend.sln --configuration Release --no-restore
-
+        run: dotnet build backend/backend.sln --configuration Release --no-restore
       # 6. Run tests
       - name: 🧪 Run tests
         run: |
