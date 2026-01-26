@@ -194,7 +194,7 @@ app.UseHttpsRedirection();
 
 app.UseRouting();
 
-app.UseAuthentication(); // ⚠️ IMPORTANTE: deve essere PRIMA di UseAuthorization
+app.UseAuthentication(); //deve essere PRIMA di UseAuthorization
 app.UseAuthorization();
 
 app.MapControllers();
