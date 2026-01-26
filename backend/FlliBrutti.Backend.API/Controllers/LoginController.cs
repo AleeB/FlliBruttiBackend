@@ -19,7 +19,6 @@ namespace FlliBrutti.Backend.API.Controllers
         private readonly IFirmaService _firmaService;
         private readonly IConfiguration _configuration;
 
-        // Cookie names
         private const string ACCESS_TOKEN_COOKIE = "access_token";
         private const string REFRESH_TOKEN_COOKIE = "refresh_token";
         private const string USER_INFO_COOKIE = "user_info";
@@ -84,11 +83,11 @@ namespace FlliBrutti.Backend.API.Controllers
                     }
                 };
 
-                // 4️⃣ Genera i token
+                // Genera i token
                 var ipAddress = HttpContext.Connection.RemoteIpAddress?.ToString() ?? "Unknown";
                 var tokens = await _jwtService.GenerateTokensAsync(userForToken, ipAddress);
 
-                // 5️⃣ Imposta i cookie
+                // Imposta i cookie
                 SetAuthCookies(tokens, userResponse);
 
                 _logger.LogInformation("User {Email} logged in successfully from IP {IpAddress}",

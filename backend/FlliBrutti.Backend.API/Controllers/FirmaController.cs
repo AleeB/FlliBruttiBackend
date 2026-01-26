@@ -100,5 +100,6 @@ namespace FlliBrutti.Backend.API.Controllers
                 return StatusCode(500, new { error = "Internal server error", details = ex.Message });
             }
         }
+        
     }
 }
