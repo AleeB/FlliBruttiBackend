@@ -4,8 +4,6 @@ Queste istruzioni permettono di avviare il progetto in locale usando Docker (con
 
 ## Prerequisiti
 - Docker Desktop con Docker Compose v2
-- (Opzionale) Node.js 20 + npm 10 per sviluppo frontend
-- (Opzionale) .NET 8 SDK per sviluppo backend
 
 ## Deploy locale con Docker
 
@@ -80,3 +78,4 @@ dotnet run --project FlliBrutti.Backend.API --launch-profile https
 ## Note
 - Il database viene inizializzato dagli script in `FlliBruttiBackend\FlliBruttiBackend\backend\init-db`.
 - Le porte possono essere cambiate nei rispettivi `docker-compose.yml`.
+
