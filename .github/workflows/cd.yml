@@ -142,8 +142,6 @@ jobs:
             # Login a GHCR
             echo "${{ secrets.GHCR_PAT }}" | docker login ghcr.io -u ${{ github.actor }} --password-stdin
             
-            # Crea file .env
-            cat > .env << 'EOF'
             REGISTRY=ghcr.io
             IMAGE_BACKEND=${{ github.repository_owner }}/fllibrutti-backend
             IMAGE_DB=${{ github.repository_owner }}/fllibrutti-db

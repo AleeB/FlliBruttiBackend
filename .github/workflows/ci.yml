@@ -17,7 +17,7 @@ env:
 
 jobs:
   build-and-test:
-    name: 🔨 Build & Test
+    name: Build & Test
     runs-on: ubuntu-latest
 
     steps:
@@ -66,7 +66,7 @@ jobs:
           dotnet restore backend/backend.sln
           dotnet list backend/backend.sln package --vulnerable --include-transitive 2>&1 | tee vulnerability-report.txt
           if grep -q "has the following vulnerable packages" vulnerability-report.txt; then
-            echo "::warning::⚠️ Vulnerable packages detected!"
+            echo "::warning: Vulnerable packages detected!"
           fi
 
   docker-build-test:
