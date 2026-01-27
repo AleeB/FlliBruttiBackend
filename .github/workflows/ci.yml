@@ -5,12 +5,12 @@ name: CI - Build & Test
 
 on:
   push:
-    branches: [main, develop, master]
+    branches: [main, master]
     paths:
       - 'backend/**'
       - '.github/workflows/ci.yml'
   pull_request:
-    branches: [main, develop, master]
+    branches: [main, master]
 
 env:
   DOTNET_VERSION: '8.0.x'
@@ -21,15 +21,15 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-      - name: 📥 Checkout repository
+      - name: Checkout repository
         uses: actions/checkout@v4
 
-      - name: 🔧 Setup .NET ${{ env.DOTNET_VERSION }}
+      - name: Setup .NET ${{ env.DOTNET_VERSION }}
         uses: actions/setup-dotnet@v4
         with:
           dotnet-version: ${{ env.DOTNET_VERSION }}
 
-      - name: 📦 Cache NuGet packages
+      - name: Cache NuGet packages
         uses: actions/cache@v4
         with:
           path: ~/.nuget/packages
@@ -37,13 +37,13 @@ jobs:
           restore-keys: |
             ${{ runner.os }}-nuget-
 
-      - name: 📚 Restore dependencies
+      - name: Restore dependencies
         run: dotnet restore backend/backend.sln
 
-      - name: 🔨 Build solution
+      - name: Build solution
         run: dotnet build backend/backend.sln --configuration Release --no-restore
 
-      # - name: 🧪 Run tests
+      # - name: Run tests
       #   run: dotnet test backend/backend.sln --configuration Release --no-build --verbosity normal
       #   continue-on-error: true
 
@@ -53,15 +53,15 @@ jobs:
     needs: build-and-test
 
     steps:
-      - name: 📥 Checkout repository
+      - name: Checkout repository
         uses: actions/checkout@v4
 
-      - name: 🔧 Setup .NET
+      - name: Setup .NET
         uses: actions/setup-dotnet@v4
         with:
           dotnet-version: ${{ env.DOTNET_VERSION }}
 
-      - name: 🔍 Check for vulnerable packages
+      - name: Check for vulnerable packages
         run: |
           dotnet restore backend/backend.sln
           dotnet list backend/backend.sln package --vulnerable --include-transitive 2>&1 | tee vulnerability-report.txt

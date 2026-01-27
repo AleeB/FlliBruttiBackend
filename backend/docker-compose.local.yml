@@ -1,0 +1,105 @@
+# ============================================
+# DOCKER COMPOSE - FlliBrutti Backend
+# Orchestrazione locale: API + MySQL
+# ============================================
+
+version: '3.8'
+
+services:
+  # === BACKEND API ===
+  api:
+    build:
+      context: .
+      dockerfile: Dockerfile
+      target: runtime
+    container_name: fllibrutti-api
+    ports:
+      - "5001:5000"
+    environment:
+      - ASPNETCORE_ENVIRONMENT=Production
+      - ASPNETCORE_URLS=http://+:5000
+      # Connection string per MySQL nel container
+      - ConnectionStrings__FlliBruttiDatabase=${DATABASE_URL}
+      # JWT Configuration
+      - Jwt__SecretKey=${JWT_SECRET_KEY:-SuperSecretKeyForJWTAuthenticationMinimum32CharactersLong!}
+      - Jwt__Issuer=FlliBrutti.Backend.API
+      - Jwt__Audience=FlliBrutti.Frontend
+      - Jwt__AccessTokenExpirationHours=2
+      - Jwt__RefreshTokenExpirationDays=15
+      # Security
+      - Security__Secret=${SECURITY_SECRET:-Secret-Di-Produzione-Sicuro}
+    depends_on:
+      db:
+        condition: service_healthy
+    networks:
+      - fllibrutti-network  # Rete con il database
+      - app-net  # Rete condivisa con il frontend
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:5000/api/v1/Login/HealthCheck"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 15s
+    volumes:
+      - api-logs:/app/Logs
+
+  # === DATABASE MYSQL ===
+  db:
+    image: mysql:8.0
+    container_name: fllibrutti-db
+    environment:
+      MYSQL_ROOT_PASSWORD: ${DB_ROOT_PASSWORD:-root2002}
+      MYSQL_DATABASE: ${DB_NAME:-FlliBrutti}
+      MYSQL_USER: ${DB_USER:-fllibrutti}
+      MYSQL_PASSWORD: ${DB_PASSWORD:-SecurePassword123!}
+    ports:
+      - "6000:3306"
+    volumes:
+      - mysql-data:/var/lib/mysql
+      - ./init-db:/docker-entrypoint-initdb.d  # Script SQL di inizializzazione
+    networks:
+      - fllibrutti-network
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost", "-u", "root", "-p${DB_ROOT_PASSWORD:-root2002}"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 30s
+    command: >
+      --default-authentication-plugin=mysql_native_password
+      --character-set-server=utf8mb4
+      --collation-server=utf8mb4_unicode_ci
+
+  # === PHPMYADMIN (opzionale, per debug) ===
+  phpmyadmin:
+    image: phpmyadmin:latest
+    container_name: fllibrutti-phpmyadmin
+    environment:
+      PMA_HOST: db
+      PMA_PORT: 3306
+      MYSQL_ROOT_PASSWORD: ${DB_ROOT_PASSWORD:-root2002}
+    ports:
+      - "8080:80"
+    depends_on:
+      - db
+    networks:
+      - fllibrutti-network
+    restart: unless-stopped
+    profiles:
+      - debug  # Avvia solo con: docker-compose --profile debug up
+
+# === VOLUMI ===
+volumes:
+  mysql-data:
+    driver: local
+  api-logs:
+    driver: local
+
+# === NETWORK ===
+networks:
+  fllibrutti-network:
+    driver: bridge
+  app-net:
+    external: true
