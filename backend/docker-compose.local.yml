@@ -102,4 +102,4 @@ networks:
   fllibrutti-network:
     driver: bridge
   app-net:
-    driver: true
+    external: true
