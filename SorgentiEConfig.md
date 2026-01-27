@@ -297,9 +297,8 @@ jobs:
           file: ./backend/Dockerfile.db
           push: false
           tags: fllibrutti-db:test
-```
 
-```
+
     # ============================================
     # CD - Continuous Deployment
     # Build Backend + Database → Deploy Staging
@@ -492,4 +491,5 @@ jobs:
               echo "" >> $GITHUB_STEP_SUMMARY
               echo "**Status:** ${{ job.status }}" >> $GITHUB_STEP_SUMMARY
               echo "**Commit:** \`${{ needs.build-and-push.outputs.short-sha }}\`" >> $GITHUB_STEP_SUMMAR
-    ```
+
+
