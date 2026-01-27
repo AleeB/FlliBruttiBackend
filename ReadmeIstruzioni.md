@@ -56,6 +56,8 @@ docker compose up -d
 Esegui `docker compose down` nella cartella backend e nella root del progetto.
 Esegui `docker compose down -v` per cancellare i volumi, nella cartella backend e nella root del progetto.
 
+### NB) Le pipeline CI / CD sono nella cartella .github/workflows nella repo del progetto.
+
 ## Modalita sviluppo (opzionale)
 
 ### Frontend
@@ -77,5 +79,6 @@ dotnet run --project FlliBrutti.Backend.API --launch-profile https
 ## Note
 - Il database viene inizializzato dagli script in `FlliBruttiBackend\FlliBruttiBackend\backend\init-db`.
 - Le porte possono essere cambiate nei rispettivi `docker-compose.yml`.
+
 
 
