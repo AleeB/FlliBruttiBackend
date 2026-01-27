@@ -22,7 +22,7 @@ cd FlliBruttiBackend\FlliBruttiBackend\backend
 ```
 
 Inserire il file `.env` ottenuto via Email dentro .\FlliBruttiBackend\backend
-```
+
 
 Avvia i container:
 
@@ -54,6 +54,7 @@ docker compose up -d
 
 ### 5) Stop e cleanup
 Esegui `docker compose down` nella cartella backend e nella root del progetto.
+Esegui `docker compose down -v` per cancellare i volumi, nella cartella backend e nella root del progetto.
 
 ## Modalita sviluppo (opzionale)
 
@@ -63,8 +64,6 @@ cd FlliBruttiFrontend
 npm ci
 npm start
 ```
-
-Nota: il proxy di sviluppo punta a `https://localhost:7115` (vedi `FlliBruttiFrontend\proxy.conf.json`).
 
 ### Backend
 ```powershell
@@ -78,4 +77,5 @@ dotnet run --project FlliBrutti.Backend.API --launch-profile https
 ## Note
 - Il database viene inizializzato dagli script in `FlliBruttiBackend\FlliBruttiBackend\backend\init-db`.
 - Le porte possono essere cambiate nei rispettivi `docker-compose.yml`.
+
 
