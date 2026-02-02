@@ -66,6 +66,7 @@ jobs:
           context: ./backend
           file: ./backend/Dockerfile
           push: true
+          platforms: linux/amd64,linux/arm64
           tags: ${{ steps.meta-backend.outputs.tags }}
           labels: ${{ steps.meta-backend.outputs.labels }}
           cache-from: type=gha,scope=backend
@@ -87,6 +88,7 @@ jobs:
           context: ./backend
           file: ./backend/Dockerfile.db
           push: true
+          platforms: linux/amd64,linux/arm64
           tags: ${{ steps.meta-db.outputs.tags }}
           labels: ${{ steps.meta-db.outputs.labels }}
           cache-from: type=gha,scope=db
