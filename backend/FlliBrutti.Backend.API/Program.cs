@@ -154,7 +154,7 @@ builder.Services.AddAuthorization();
 builder.Services.AddDbContext<FlliBruttiContext>(opt =>
 {
     opt.UseMySql(
-        builder.Configuration.GetConnectionString("FlliBruttiDatabase"),
+        builder.Configuration["ConnectionStrings:FlliBruttiDatabase"],
         new MySqlServerVersion(new Version(8, 0, 33))
     );
 });
